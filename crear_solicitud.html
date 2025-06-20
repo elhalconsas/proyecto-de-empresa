@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html><!--hola a tosdos-->
+<html>
 <head>
   <style>
     /* Estilo para que el header quede fijo */
@@ -16,7 +16,6 @@
       align-items: center;
     }
 
-    /* Contenedor del contenido principal */
     .grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -24,153 +23,191 @@
       gap: 3px;
       padding: 140px 10px 10px;
     }
-    
+
     .grid-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
       padding: 20px;
     }
-    
+
     .gray-section {
       background-color: rgb(143, 143, 143);
       padding: 15px;
       border-radius: 5px;
     }
-    
+
     .form-section {
       margin-bottom: 15px;
     }
-    
+
     .form-title {
       font-size: 1.2em;
       font-weight: bold;
       margin-bottom: 10px;
       color: #333;
     }
-    
+
     .form-row {
       display: flex;
       margin-bottom: 10px;
-      
     }
-    
+
     .form-label {
       width: 160px;
       font-weight: bold;
     }
-    
+
+    .form-label2 {
+      width: 100px;
+      font-weight: bold;
+    }
+
     .form-input {
       padding: 6px;
       border: 1px solid #ddd;
       border-radius: 4px;
       width: 200px;
     }
-    
+
     select.form-input {
       width: 218px;
     }
-    
+
     .radio-group {
       display: flex;
       gap: 15px;
     }
-    
+
     .radio-option {
       display: flex;
       align-items: center;
     }
-    
+
     .help-link {
       color: #0066cc;
       text-decoration: none;
       font-size: 0.9em;
     }
-    
+
     .divider {
       border-top: 1px solid #1b1b1b;
       margin: 15px 0;
     }
-    
+
     .note {
       font-size: 0.9em;
       color: #333;
       margin-top: 10px;
     }
-    
+
     input[type="button"] {
       height: 100%;
       width: 100%;
       box-sizing: border-box;
     }
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
     }
-    
+
     th, td {
       border: 1px solid black;
       padding: 8px;
       text-align: left;
     }
-    
+
     th {
       background-color: #547454;
       color: white;
     }
-    
-    /* Nuevos estilos para botones de acción */
+
     .action-btn {
       padding: 4px 8px;
       margin: 0 2px;
       cursor: pointer;
     }
-    
+
     .delete-btn {
       background-color: #ff6b6b;
       color: white;
       border: none;
       border-radius: 3px;
     }
+   /* Estilo para la celda de acciones */
+td {
+  vertical-align: middle;
+}
+
+/* Estilo para el selector de técnicos */
+select.form-input {
+  padding: 4px;
+  margin: 0;
+}
+
+/* Estilo para el botón eliminar */
+.delete-btn {
+  padding: 4px 8px;
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+/* Contenedor flex para los elementos en la celda */
+.action-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
   </style>
-  <script src="manejo_form.js" defer></script>
+
 </head>
+<script src="manejo_form.js" defer></script>
 <body>
 
   <!-- HEADER FIJO -->
   <header>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/UNAL_Aplicaci%C3%B3n_Medell%C3%ADn.svg" alt="logoUNAL" style="height: 90px;" onclick="location.href='web_principal.html'">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/UNAL_Aplicaci%C3%B3n_Medell%C3%ADn.svg"
+         alt="logoUNAL" style="height: 90px;" onclick="location.href='web_principal.html'">
   </header>
 
   <!-- GRID DE BOTONES -->
   <div class="grid">
     <form>
-      <input type="button" value="Crear una nueva solicitud" onclick="location.href='crear_solicitud.html'" style="background-color: rgb(40, 135, 224);">
+      <input type="button" value="Crear una nueva solicitud"
+             onclick="location.href='crear_solicitud.html'"
+             style="background-color: rgb(40, 135, 224);">
     </form>
     <form>
-      <input type="button" value="Solicitudes en proceso" onclick="location.href='solicitudes_proceso.html'" style="background-color: rgb(255, 131, 131);">
+      <input type="button" value="Solicitudes en proceso"
+             onclick="location.href='solicitudes_proceso.html'"
+             style="background-color: rgb(255, 131, 131);">
     </form>
     <form>
-      <input type="button" value="Solicitudes finalizadas" onclick="location.href='solicitudes_finalizadas.html'" style="background-color: rgb(114, 172, 109);">
+      <input type="button" value="Solicitudes finalizadas"
+             onclick="location.href='solicitudes_finalizadas.html'"
+             style="background-color: rgb(114, 172, 109);">
     </form>
   </div>
 
-  <!-- CONTENEDOR PRINCIPAL CON DOS COLUMNAS -->
+  <!-- CONTENEDOR PRINCIPAL -->
   <div class="grid-container">
 
-    <!-- PRIMERA COLUMNA (FORMULARIO) -->
+    <!-- FORMULARIO -->
     <div class="gray-section">
-      <h2 style=" text-align: center;">SOLICITUD DE SERVICIO / ENSAYO</h2>
+      <h2 style="text-align: center;">SOLICITUD DE SERVICIO / ENSAYO</h2>
 
       <div class="form-section">
         <div class="form-row">
           <span class="form-label">No. de la solicitud: </span>
           <input type="text" class="form-input" id="numeroSolicitud" readonly style="margin-right: 28px;">
-          <span class="form-label" style="width:auto; margin-right:10px;">No. del caso: </span>
+          <span class="form-label2" style="width:auto; margin-right:10px;">No. del caso: </span>
           <input type="text" class="form-input" id="numeroCaso" readonly>
         </div>
-        
+
         <div class="form-row">
           <span class="form-label">Fecha de la solicitud: </span>
           <input type="text" class="form-input" id="fechaSolicitud" readonly>
@@ -178,69 +215,27 @@
       </div>
 
       <div class="divider"></div>
-      
-      <div class="form-section">
-        <div class="form-title">INFORMACIÓN DE LA SOLICITUD</div>
-        
-        <div class="form-row">
-          <span class="form-label">Tipo de solicitante<samp style="color: red;">*</samp>:</span>
-          <div class="radio-group">
-            <div class="radio-option">
-              <input type="radio" id="interno" name="tipo_solicitante" value="interno">
-              <label for="interno">Interno</label>
-            </div>
-            <div class="radio-option">
-              <input type="radio" id="externo" name="tipo_solicitante" value="externo">
-              <label for="externo">Externo</label>
-            </div>
-          </div>
-        </div>
-        
-        <div class="form-row">
-          <span class="form-label">Tipo de solicitud<samp style="color: red;">*</samp>:</span>
-          <select class="form-input" id="tipoSolicitud">
-            <option value="">Seleccione</option>
-            <option value="portalistico">Portafolio de servicios</option>
-            <option value="practicas">Prácticas académicas y Otros servicios</option>
-          </select>
-        </div>
-        
-        <div class="form-row">
-          <span class="form-label">Tipo de servicio<samp style="color: red;">*</samp>:</span>
-          <select class="form-input" id="tipoServicio">
-            <option value="">Seleccione</option>
-            <option value="docencia">Docencia</option>
-            <option value="investigacion">Investigación</option>
-            <option value="extension">Extensión (Usuario externo)</option>
-          </select>
-        </div>
-      </div>
-      
-      <div class="divider"></div>
 
       <div class="form-section">
         <div class="form-title">Consulta en el catálogo</div>
-        
+
         <div class="form-row">
           <span class="form-label">Laboratorio: </span>
-          <input type="text" class="form-input" id="nombreLaboratorio" style="margin-right: 8%;">
-          <span class="form-label">Sede: </span>
-          <select class="form-input" id="sede" style="margin-left: -110px;">
-            <option value="">Seleccione</option>
-            <option value="sede1">Sede Principal</option>
-            <option value="sede2">Sede Norte</option>
-            <option value="sede3">Sede Sur</option>
-          </select>
+          <input type="text" class="form-input" id="nombreLaboratorio" style="margin-right: 6%;">
+          <span class="form-label2">Bloque<samp style="color: red;">*</samp>:</span>
+          <input type="text" class="form-input" id="NumBloque">
         </div>
-        
+
         <div class="form-row">
           <span class="form-label">Facultad: </span>
-          <select class="form-input" id="facultad">
+          <select class="form-input" id="facultad" style="margin-right: 5.5%;">
             <option value="">Seleccione</option>
-            <option value="ingenieria">Ingeniería</option>
-            <option value="ciencias">Ciencias</option>
-            <option value="medicina">Medicina</option>
+            <option value="Ciencias">Ciencias</option>
+            <option value="Ciencias Agrarias">Ciencias Agrarias</option>
+            <option value="Minas">Minas</option>
           </select>
+          <span class="form-label2">Salon<samp style="color: red;">*</samp>:</span>
+          <input type="text" class="form-input" id="numSalon">
         </div>
       </div>
 
@@ -248,26 +243,66 @@
 
       <div class="form-section">
         <div class="form-title">INFORMACIÓN DEL USUARIO</div>
-        
+
         <div class="form-row">
-          <span class="form-label">Numero de <br> identificacion <san style="color: red;">*</san>: </span>
-          <input type="text" class="form-input" id="numeroIdentificacion" style="margin-right: 3%;">
-          <span class="form-label; line-height: 0.3;">Tipo de identificación <san style="color: red;">*</san>:</span>
-          <select class="form-input" id="tipoIdentificacion">
+          <span class="form-label">Correo Electronico<span style="color: red;">*</span>: </span>
+          <input type="text" class="form-input" id="correoElectronico" style="margin-right: 4.5%;">
+          <span class="form-label2">Numero de contacto<span style="color: red;"> *</span> :</span>
+          <input type="text" class="form-input" id="numeroContacto">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-section">
+        <div class="form-title">INFORMACIÓN DEL EQUIPO</div>
+
+        <div class="form-row">
+          <span class="form-label">No. del equipo<span style="color: red;">*</span>: </span>
+          <input type="text" class="form-input" id="numEquipo" style="margin-right: 4.5%;">
+          <span class="form-label2">Placa del equipo<span style="color: red;">*</span>: </span>
+          <input type="text" class="form-input" id="placaEquipo">
+        </div>
+
+        <div class="form-row">
+          <span class="form-label">Orden de trabajo:</span>
+          <input type="text" class="form-input" id="ordenTrabajo" style="margin-right: 4.5%;">
+          <span class="form-label2">Familia/Tipo:</span>
+          <input type="text" class="form-input" id="familiaTipo">
+        </div>
+
+        <div class="form-row">
+          <span class="form-label">Tipo de equipo:</span>
+          <select class="form-input" id="tipoEquipo">
             <option value="">Seleccione</option>
-            <option value="cc">Cédula de Ciudadanía</option>
-            <option value="ti">Tarjeta de Identidad</option>
-            <option value="ce">Cédula de Extranjería</option>
+            <option value="medicion_control">Equipos de Medición y Control</option>
+            <option value="opticos">Instrumentos Ópticos</option>
+            <option value="electricos">Equipos Eléctricos</option>
+            <option value="calentamiento">Equipos de calentamiento</option>
+            <option value="herramientas">Herramientas</option>
+            <option value="tecnologia_computacion">Técnología y Computación</option>
+            <option value="refrigeracion">Equipos de refrigeración</option>
+            <option value="mecanicos">Equipos Mecánicos</option>
+            <option value="accesorios_laboratorio">Accesorios de laboratorio</option>
+            <option value="componentes_electronicos">Componentes Eléctronicos</option>
+            <option value="limpieza">Equipos de limpieza</option>
+            <option value="equipos_laboratorio">Equipos de laboratorio</option>
+            <option value="otros">Otros</option>
           </select>
+        </div>
+
+        <div class="form-row">
+          <span class="form-label">Descripcion del problema/Tipo de mantenimiento:<span style="color: red;">*</span>: </span>
+          <textarea id="descripcionProblema"  cols="75" rows="5"></textarea>
         </div>
       </div>
 
       <div style="text-align: center; margin-top: 15px;">
-        <input type="button" value="Confirmar" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="agregarSolicitud()">
+        <input type="button" value="Confirmar"style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="agregarSolicitud()">
       </div>
     </div>
 
-     <!-- SEGUNDA COLUMNA (TABLA) -->
+    <!-- TABLA DE SOLICITUDES -->
     <div class="gray-section">
       <table id="tablaSolicitudes">
         <thead>
@@ -281,12 +316,12 @@
           </tr>
         </thead>
         <tbody id="cuerpoTabla">
-          
+          <!-- Filas dinámicas -->
         </tbody>
       </table>
     </div>
+
   </div>
 
-  
 </body>
 </html>
