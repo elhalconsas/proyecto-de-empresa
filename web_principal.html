@@ -1,126 +1,71 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel de Solicitudes</title>
+
+  <!-- Bootstrap 5.3.7 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <style>
-    /* Estilo para que el header quede fijo */
+    body {
+      padding-top: 130px;
+    }
     header {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
-      background-color: white;
-      padding: 10px;
+      background-color: #d8d5d5;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       z-index: 1000;
-      display: flex;
-      align-items: center;
     }
-
-    /* Contenedor del contenido principal */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr); /* 3 columnas */
-      grid-template-rows: repeat(3, 100px);  /* 3 filas */
-      gap: 3px;
-      padding: 140px 10px 10px; /* espacio para que no se tape por el header */
+    .logo {
+      height: 90px;
+      cursor: pointer;
     }
-
-    input[type="button"] {
-      height: 100%;
-      width: 100%;
-      box-sizing: border-box;
-     
+    .gray-section {
+      background-color: #8f8f8f;
+      padding: 20px;
+      border-radius: 8px;
+      color: white;
+    }
+    .form-label {
+      font-weight: 600;
+    }
+    .form-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin: 15px 0;
+      color: #fff;
+    }
+    textarea {
+      resize: vertical;
     }
   </style>
 </head>
 <body>
 
-  <!-- HEADER FIJO -->
-  <header>
-     <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/UNAL_Aplicaci%C3%B3n_Medell%C3%ADn.svg" alt="logoUNAL" style="height: 90px;" onclick="location.href='web_principal.html'">
-  </header>
-
-  <!-- GRID DE BOTONES -->
-  <div class="grid">
-    <form>
-      <input type="button" value="Crear una nueva solicitud" onclick="location.href='crear_solicitud.html'" style="background-color: rgb(98, 179, 255); ">
-    </form>
-    <form>
-      <input type="button" value="Solicitudes en proceso" onclick="location.href='solicitudes_proceso.html'" style="background-color: rgb(255, 131, 131);">
-    </form>
-    <form>
-      <input type="button" value="Solicitudes finalizadas" onclick="location.href='solicitudes_finalizadas.html'" style="background-color: rgb(114, 172, 109);">
-    </form>
-
+  <!-- HEADER FIJO CON LOGO A LA IZQUIERDA Y BOTONES A LA DERECHA -->
+  <header class="px-3 py-2 d-flex flex-column flex-md-row align-items-center justify-content-start gap-3">
     
-  </div>
-
-</body>
-</html>
-=======
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    /* Estilo para que el header quede fijo */
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background-color: white;
-      padding: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-    }
-
-    /* Contenedor del contenido principal */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr); /* 3 columnas */
-      grid-template-rows: repeat(3, 100px);  /* 3 filas */
-      gap: 3px;
-      padding: 140px 10px 10px; /* espacio para que no se tape por el header */
-    }
-
-    input[type="button"] {
-      height: 100%;
-      width: 100%;
-      box-sizing: border-box;
-     
-    }
-  </style>
-</head>
-<body>
-
-  <!-- HEADER FIJO -->
-  <header>
-     <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/UNAL_Aplicaci%C3%B3n_Medell%C3%ADn.svg" alt="logoUNAL" style="height: 90px;" onclick="location.href='web_principal.html'">
+    <!-- LOGO A LA IZQUIERDA -->
+    <header class="p-3 d-flex flex-wrap align-items-center justify-content-between">
+    <div class="d-flex align-items-center">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/UNAL_Aplicaci%C3%B3n_Medell%C3%ADn.svg"
+           alt="logoUNAL" class="logo me-4" onclick="location.href='web_principal.html'">
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-primary" onclick="location.href='crear_solicitud.html'">Crear una nueva solicitud</button>
+        <button class="btn btn-danger" onclick="location.href='solicitudes_proceso.html'">Solicitudes en proceso</button>
+        <button class="btn btn-success" onclick="location.href='solicitudes_finalizadas.html'">Solicitudes finalizadas</button>
+      </div>
+    </div>
   </header>
 
-  <!-- GRID DE BOTONES -->
-  <div class="grid">
-    <form>
-      <input type="button" value="Crear una nueva solicitud" onclick="location.href='crear_solicitud.html'" style="background-color: rgb(98, 179, 255); ">
-    </form>
-    <form>
-      <input type="button" value="Solicitudes en proceso" onclick="location.href='solicitudes_proceso.html'" style="background-color: rgb(255, 131, 131);">
-    </form>
-    <form>
-      <input type="button" value="Solicitudes finalizadas" onclick="location.href='solicitudes_finalizadas.html'" style="background-color: rgb(114, 172, 109);">
-    </form>
 
-    <form>7</form>
-    <form>8</form>
-    <form>9</form>
-    <form>10</form>
-    <form>11</form>
-    <form>12</form>
-  </div>
-
+  </header>
+  <!-- Bootstrap 5.3.7 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
->>>>>>> d4a17eea69a4f7d33dbb546fc944a58fdd46e80d
