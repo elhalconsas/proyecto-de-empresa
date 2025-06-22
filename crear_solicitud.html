@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Solicitud de Servicio</title>
-
-  <!-- Bootstrap 5.3.7 CSS -->
+  <title>Solicitud de Servicio</title>  
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
@@ -47,7 +45,7 @@
 </head>
 <body>
 
-  <!-- HEADER -->
+  
   <header class="p-3 d-flex flex-wrap align-items-center justify-content-between">
     <div class="d-flex align-items-center">
       <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/UNAL_Aplicaci%C3%B3n_Medell%C3%ADn.svg"
@@ -60,16 +58,14 @@
     </div>
   </header>
 
-  <!-- CONTENIDO -->
-  <div class="container">
-    <div class="row g-4">
-
-      <!-- FORMULARIO -->
-      <div class="col-lg-6">
+ 
+  <div class="container-sm4">
+    <div class="row g-1">
+      
+      <div class="col-lg-5">
         <div class="gray-section">
           <h2 class="text-center">SOLICITUD DE SERVICIO / ENSAYO</h2>
 
-          <!-- Info inicial -->
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label">No. de la solicitud:</label>
@@ -85,7 +81,6 @@
             <input type="text" class="form-control" id="fechaSolicitud" readonly>
           </div>
 
-          <!-- Catálogo -->
           <div class="form-title">Consulta en el catálogo</div>
           <div class="row mb-3">
             <div class="col-md-6">
@@ -113,7 +108,6 @@
             </div>
           </div>
 
-          <!-- Usuario -->
           <div class="form-title">INFORMACIÓN DEL USUARIO</div>
           <div class="row mb-3">
             <div class="col-md-6">
@@ -126,7 +120,6 @@
             </div>
           </div>
 
-          <!-- Equipo -->
           <div class="form-title">INFORMACIÓN DEL EQUIPO</div>
           <div class="row mb-3">
             <div class="col-md-6">
@@ -173,16 +166,17 @@
           </div>
 
           <div class="text-center mt-4">
-            <button class="btn btn-success px-4" onclick="agregarSolicitud()">Confirmar</button>
+            <button class="btn btn-success px-4" onclick="guardarSolicitud()">Confirmar</button>
+
           </div>
         </div>
       </div>
 
       <!-- TABLA -->
-      <div class="col-lg-6">
+      <div class="col-lg-7">
         <div class="gray-section">
           <h4 class="text-white">Solicitudes realizadas</h4>
-          <table class="table table-bordered table-hover table-light text-dark mt-3" id="tablaSolicitudes">
+          <table class="table table-striped table-hover table-light text-dark mt-3" id="tablaSolicitudes" style="font-size: 0.9rem;">
             <thead class="table-dark">
               <tr>
                 <th># Caso</th>
@@ -199,12 +193,11 @@
           </table>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- JS -->
-  <script src="manejo_form.js" defer></script>
+<script src="crear_solicitud_form.js" defer></script>
+<script src="solicitudes_proceso_forms.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
