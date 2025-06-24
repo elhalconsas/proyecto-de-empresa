@@ -54,65 +54,67 @@
       </div>
     </div>
   </header>
-  <div class="container mt-4">
-    <div class="card">
-      <div class="card-header bg-primary text-white">
-        <h4>Detalle Completo de la Solicitud</h4>
-      </div>
-      <div class="card-body" id="detalleSolicitud">
-        <!-- Se llena con JavaScript -->
-      </div>
-      <div class="card-footer">
-        <button class="btn btn-secondary" onclick="window.history.back()">Volver</button>
-      </div>
+  <div class="mb-4">
+  <table class="table table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th># Caso</th>
+        <th>Técnico Asignado</th>
+        <th>Estado</th>
+        <th>Fecha Inicio</th>
+        <th>Tiempo Transcurrido</th>
+      </tr>
+    </thead>
+    <tbody id="tablaDetalleResumen">
+      <!-- Se llena con JS -->
+    </tbody>
+  </table>
+</div>
+<ul class="nav nav-tabs" id="tabsProceso" role="tablist">
+  <li class="nav-item">
+    <button class="nav-link active" id="tab-informacion" data-bs-toggle="tab" data-bs-target="#informacion" type="button">Información Solicitud</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link disabled" id="tab-diagnostico" data-bs-toggle="tab" data-bs-target="#diagnostico" type="button">Diagnóstico</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link disabled" id="tab-mantenimiento" data-bs-toggle="tab" data-bs-target="#mantenimiento" type="button">Mantenimiento</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link disabled" id="tab-informe" data-bs-toggle="tab" data-bs-target="#informe" type="button"> Informe</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link disabled" id="tab-aprobacion" data-bs-toggle="tab" data-bs-target="#aprobacion" type="button">Aprobación</button>
+  </li>
+</ul>
+
+<div class="tab-content p-3 border border-top-0 rounded-bottom">
+  <div class="tab-pane fade show active" id="informacion">
+    <div id="infoSolicitud"  >
+      <!-- Contenido generado por JS -->
     </div>
+    <button class="btn btn-primary mt-3" onclick="continuarProceso('diagnostico', 'En Diagnóstico')">Continuar</button>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const numeroCaso = localStorage.getItem('detalleActual');
-      const solicitudes = JSON.parse(localStorage.getItem('solicitudes')) || [];
-      const solicitud = solicitudes.find(s => s.numeroCaso === numeroCaso);
-      
-      if (solicitud) {
-        mostrarDetalle(solicitud);
-      }
-    });
+  <div class="tab-pane fade" id="diagnostico">
+    <p>Informe de diagnóstico...</p>
+    <button class="btn btn-primary" onclick="continuarProceso('mantenimiento', 'En Mantenimiento')">Continuar</button>
+  </div>
+  <div class="tab-pane fade" id="mantenimiento">
+    <p>Proceso de mantenimiento...</p>
+    <button class="btn btn-primary" onclick="continuarProceso('informe', 'En Informe')">Continuar</button>
+  </div>
+  <div class="tab-pane fade" id="informe">
+    <p>Generación de informe técnico...</p>
+    <button class="btn btn-primary" onclick="continuarProceso('aprobacion', 'En Aprobación')">Continuar</button>
+  </div>
+  <div class="tab-pane fade" id="aprobacion">
+    <p>Revisión y aprobación final...</p>
+    <button class="btn btn-success" onclick="finalizarProceso()">Finalizar</button>
+  </div>
+</div>
 
-    function mostrarDetalle(solicitud) {
-      const contenedor = document.getElementById('detalleSolicitud');
-      
-      const html = `
-        <div class="row mb-3">
-          <div class="col-md-4"><strong>Número de Caso:</strong></div>
-          <div class="col-md-8">${solicitud.numeroCaso}</div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-4"><strong>Laboratorio:</strong></div>
-          <div class="col-md-8">${solicitud.nombreLaboratorio}</div>
-        </div>
-        <!-- Agrega todos los campos que necesites mostrar -->
-        <div class="row mb-3">
-          <div class="col-md-4"><strong>Descripción del Problema:</strong></div>
-          <div class="col-md-8">${solicitud.descripcionProblema}</div>
-        </div>
-        <div class="row mb-3">
-          <div class="col-md-4"><strong>Estado:</strong></div>
-          <div class="col-md-8">
-            <span class="badge ${obtenerClaseEstado(solicitud.estado)}">
-              ${solicitud.estado}
-            </span>
-          </div>
-        </div>
-        <!-- Puedes agregar más campos según necesites -->
-      `;
-      
-      contenedor.innerHTML = html;
-    }
 
-    function obtenerClaseEstado(estado) {
-      // La misma función que en el archivo anterior
-    }
-  </script>
+<script src="detalle_solicitud_forms.js" defer></script>
 </body>
 </html>s

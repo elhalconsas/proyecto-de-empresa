@@ -57,10 +57,11 @@ function cargarSolicitudesEnProceso() {
 
 function obtenerClaseEstado(estado) {
   switch (estado) {
-    case 'Pendiente': return 'bg-warning text-dark';
-    case 'En Proceso': return 'bg-primary';
-    case 'Finalizado': return 'bg-success';
-    case 'Cancelado': return 'bg-danger';
+    case 'Asignada': return 'bg-warning text-dark';
+    case 'En diagnostico': return 'bg-primary';
+    case 'En mantenimiento': return 'bg-primary';
+    case 'En informe': return 'bg-success';
+    case 'En aprobacion ': return 'bg-danger';
     default: return 'bg-secondary';
   }
 }

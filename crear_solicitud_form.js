@@ -62,7 +62,6 @@ function guardarSolicitud() {
     numEquipo: document.getElementById('numEquipo').value,
     placaEquipo: document.getElementById('placaEquipo').value,
     ordenTrabajo: document.getElementById('ordenTrabajo').value,
-    familiaTipo: document.getElementById('familiaTipo').value,
     tipoEquipo: document.getElementById('tipoEquipo').value,
     descripcionProblema: document.getElementById('descripcionProblema').value
   };
@@ -113,7 +112,7 @@ function agregarFilaATabla(solicitud) {
   const nuevaSolicitud = {
     ...solicitud,
     tecnicoAsignado: selector.value,
-    estado: 'En Proceso',
+    estado: 'Asignada',
     fechaInicio: new Date().toLocaleDateString()
   };
 
