@@ -91,7 +91,45 @@
 <div class="tab-content p-3 border border-top-0 rounded-bottom">
   <div class="tab-pane fade show active" id="informacion">
     <div id="infoSolicitud"  >
-      <!-- Contenido generado por JS -->
+     <script>
+      mostrarInfoSolicitud('enProceso');
+      function mostrarInfoSolicitud(solicitud) {
+        const contenedor = document.getElementById('infoSolicitud');
+        contenedor.innerHTML = `
+          <div class="row">
+            <div class="col-md-6"><strong>Número de Solicitud:</strong> ${solicitud.numeroSolicitud}</div>
+            <div class="col-md-6"><strong>Fecha de Solicitud:</strong> ${solicitud.fechaSolicitud}</div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6"><strong>Laboratorio:</strong> ${solicitud.nombreLaboratorio}</div>
+            <div class="col-md-6"><strong>Bloque:</strong> ${solicitud.bloque}</div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6"><strong>Facultad:</strong> ${solicitud.facultad}</div>
+            <div class="col-md-6"><strong>Salón:</strong> ${solicitud.salon}</div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6"><strong>Correo Electrónico:</strong> ${solicitud.correoElectronico}</div>
+            <div class="col-md-6"><strong>Contacto:</strong> ${solicitud.numeroContacto}</div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6"><strong>Número de Equipo:</strong> ${solicitud.numEquipo}</div>
+            <div class="col-md-6"><strong>Placa del Equipo:</strong> ${solicitud.placaEquipo}</div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6"><strong>Orden de Trabajo:</strong> ${solicitud.ordenTrabajo}</div>
+            
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6"><strong>Tipo de Equipo:</strong> ${solicitud.tipoEquipo}</div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-12"><strong>Descripción del Problema:</strong><br>${solicitud.descripcionProblema}</div>
+          </div>
+        `;
+      }
+
+     </script>
     </div>
     <button class="btn btn-primary mt-3" onclick="continuarProceso('diagnostico', 'En Diagnóstico')">Continuar</button>
   </div>
