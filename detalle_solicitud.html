@@ -70,23 +70,14 @@
     </tbody>
   </table>
 </div>
-<ul class="nav nav-tabs" id="tabsProceso" role="tablist">
-  <li class="nav-item">
-    <button class="nav-link active" id="tab-informacion" data-bs-toggle="tab" data-bs-target="#informacion" type="button">Información Solicitud</button>
-  </li>
-  <li class="nav-item">
-    <button class="nav-link disabled" id="tab-diagnostico" data-bs-toggle="tab" data-bs-target="#diagnostico" type="button">Diagnóstico</button>
-  </li>
-  <li class="nav-item">
-    <button class="nav-link disabled" id="tab-mantenimiento" data-bs-toggle="tab" data-bs-target="#mantenimiento" type="button">Mantenimiento</button>
-  </li>
-  <li class="nav-item">
-    <button class="nav-link disabled" id="tab-informe" data-bs-toggle="tab" data-bs-target="#informe" type="button"> Informe</button>
-  </li>
-  <li class="nav-item">
-    <button class="nav-link disabled" id="tab-aprobacion" data-bs-toggle="tab" data-bs-target="#aprobacion" type="button">Aprobación</button>
-  </li>
-</ul>
+    
+    <div class="d-flex justify-content-between mb-4">
+      <button id="btnInformacion" class="btn btn-primary stage-btn active" data-stage="informacion">Información Solicitud</button>
+      <button id="btnDiagnostico" class="btn btn-secondary stage-btn" data-stage="diagnostico">Diagnóstico</button>
+      <button id="btnMantenimiento" class="btn btn-secondary stage-btn" data-stage="mantenimiento">Mantenimiento</button>
+      <button id="btnInforme" class="btn btn-secondary stage-btn" data-stage="informe">Informe</button>
+      <button id="btnAprobacion" class="btn btn-secondary stage-btn" data-stage="aprobacion">Aprobación</button>
+    </div>
 
 <div class="tab-content p-3 border border-top-0 rounded-bottom">
   <div class="tab-pane fade show active" id="informacion">
