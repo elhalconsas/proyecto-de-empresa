@@ -1,5 +1,8 @@
 let solicitudActual = null;
 let modoEdicion = false;
+let diagnosticoEntries = [];
+let mantenimientoEntries = [];
+let etapaActual = 'informacion';
 
 document.addEventListener('DOMContentLoaded', function () {
   const numeroCaso = localStorage.getItem('detalleActual');
@@ -7,20 +10,73 @@ document.addEventListener('DOMContentLoaded', function () {
   solicitudActual = solicitudes.find(s => s.numeroCaso === numeroCaso);
 
   if (solicitudActual) {
-    mostrarResumen(solicitudActual);
-    mostrarInfoSolicitud(solicitudActual);
+    // Restaurar estado de la solicitud
+    if (solicitudActual.etapaActual) {
+      etapaActual = solicitudActual.etapaActual;
+    }
     
-    // Configurar botones de etapas
-    document.querySelectorAll('.stage-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        activarEtapa(this.dataset.stage);
-      });
-    });
+    if (solicitudActual.diagnosticoEntries) {
+      diagnosticoEntries = solicitudActual.diagnosticoEntries;
+    }
     
-    // Configurar botón de edición
-    document.getElementById('btnEditar').addEventListener('click', habilitarEdicion);
+    if (solicitudActual.mantenimientoEntries) {
+      mantenimientoEntries = solicitudActual.mantenimientoEntries;
+    }
+    
+    // Inicializar UI
+    inicializarUI();
+    
+    // Configurar eventos
+    configurarEventos();
   }
 });
+
+function inicializarUI() {
+  mostrarResumen(solicitudActual);
+  mostrarInfoSolicitud(solicitudActual);
+  mostrarDiagnosticoEntries();
+  mostrarMantenimientoEntries();
+  
+  // Mostrar la etapa actual
+  mostrarEtapa(etapaActual);
+  
+  // Actualizar indicadores de etapas
+  actualizarIndicadoresEtapas();
+}
+
+function configurarEventos() {
+  // Botones de navegación
+  document.getElementById('btnContinuarDiagnostico').addEventListener('click', () => mostrarEtapa('diagnostico'));
+  document.getElementById('btnVolverInformacion').addEventListener('click', () => mostrarEtapa('informacion'));
+  document.getElementById('btnContinuarMantenimiento').addEventListener('click', () => mostrarEtapa('mantenimiento'));
+  document.getElementById('btnVolverDiagnostico').addEventListener('click', () => mostrarEtapa('diagnostico'));
+  document.getElementById('btnContinuarInforme').addEventListener('click', () => mostrarEtapa('informe'));
+  document.getElementById('btnVolverMantenimiento').addEventListener('click', () => mostrarEtapa('mantenimiento'));
+  document.getElementById('btnFinalizarProceso').addEventListener('click', finalizarProceso);
+  
+  // Botones de acciones
+  document.getElementById('btnEditar').addEventListener('click', habilitarEdicion);
+  document.getElementById('btnSaltarMantenimiento').addEventListener('click', saltarAMantenimiento);
+  
+  // Configurar formularios
+  document.getElementById('formDiagnostico').addEventListener('submit', guardarDiagnostico);
+  document.getElementById('formMantenimiento').addEventListener('submit', guardarMantenimiento);
+  
+  // Configurar previsualización de imágenes
+  document.getElementById('imagenesDiagnostico').addEventListener('change', function(e) {
+    previewImages(e.target.files, 'previewDiagnostico');
+  });
+  
+  document.getElementById('imagenesMantenimiento').addEventListener('change', function(e) {
+    previewImages(e.target.files, 'previewMantenimiento');
+  });
+  
+  // Botones de etapas
+  document.getElementById('btnEtapaInformacion').addEventListener('click', () => mostrarEtapa('informacion'));
+  document.getElementById('btnEtapaDiagnostico').addEventListener('click', () => mostrarEtapa('diagnostico'));
+  document.getElementById('btnEtapaMantenimiento').addEventListener('click', () => mostrarEtapa('mantenimiento'));
+  document.getElementById('btnEtapaInforme').addEventListener('click', () => mostrarEtapa('informe'));
+}
 
 function mostrarResumen(solicitud) {
   const resumen = document.getElementById('tablaDetalleResumen');
@@ -85,6 +141,49 @@ function mostrarInfoSolicitud(solicitud) {
       <div class="col-12"><strong>Descripción del Problema:</strong><br>${solicitud.descripcionProblema}</div>
     </div>
   `;
+}
+
+function mostrarEtapa(etapa) {
+  etapaActual = etapa;
+  
+  // Ocultar todas las secciones
+  document.getElementById('informacionSection').classList.add('collapse');
+  document.getElementById('diagnosticoSection').classList.add('collapse');
+  document.getElementById('mantenimientoSection').classList.add('collapse');
+  document.getElementById('informeSection').classList.add('collapse');
+  
+  // Mostrar la sección activa
+  document.getElementById(`${etapa}Section`).classList.remove('collapse');
+  
+  // Si es la etapa de informe, generar el resumen
+  if (etapa === 'informe') {
+    generarResumenInforme();
+  }
+  
+  // Actualizar estado en solicitud
+  solicitudActual.etapaActual = etapaActual;
+  actualizarEnStorage();
+  
+  // Actualizar indicadores
+  actualizarIndicadoresEtapas();
+}
+
+function actualizarIndicadoresEtapas() {
+  // Actualizar estado de los botones de etapas
+  const etapas = ['informacion', 'diagnostico', 'mantenimiento', 'informe'];
+  
+  etapas.forEach((etapa, index) => {
+    const btn = document.getElementById(`btnEtapa${etapa.charAt(0).toUpperCase() + etapa.slice(1)}`);
+    btn.classList.remove('etapa-activa', 'etapa-completa');
+    
+    if (etapa === etapaActual) {
+      btn.classList.add('etapa-activa');
+    }
+    
+    if (index < etapas.indexOf(etapaActual)) {
+      btn.classList.add('etapa-completa');
+    }
+  });
 }
 
 function habilitarEdicion() {
@@ -196,12 +295,7 @@ function guardarEdicion() {
   solicitudActual.descripcionProblema = document.getElementById('editDescripcion').value;
 
   // Actualizar localStorage
-  let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
-  const index = enProceso.findIndex(s => s.numeroCaso === solicitudActual.numeroCaso);
-  if (index !== -1) {
-    enProceso[index] = solicitudActual;
-    localStorage.setItem('enProceso', JSON.stringify(enProceso));
-  }
+  actualizarEnStorage();
 
   // Volver a modo visualización
   modoEdicion = false;
@@ -214,46 +308,145 @@ function cancelarEdicion() {
   mostrarInfoSolicitud(solicitudActual);
 }
 
-function activarEtapa(etapa) {
-  // Actualizar estado si es necesario
-  if (etapa === 'diagnostico' && solicitudActual.estado === 'Asignada') {
-    solicitudActual.estado = 'En Diagnóstico';
-    actualizarEstadoEnStorage();
-  } else if (etapa === 'mantenimiento' && solicitudActual.estado === 'En Diagnóstico') {
-    solicitudActual.estado = 'En Mantenimiento';
-    actualizarEstadoEnStorage();
-  } else if (etapa === 'informe' && solicitudActual.estado === 'En Mantenimiento') {
-    solicitudActual.estado = 'En Informe';
-    actualizarEstadoEnStorage();
-  } else if (etapa === 'aprobacion' && solicitudActual.estado === 'En Informe') {
-    solicitudActual.estado = 'En Aprobación';
-    actualizarEstadoEnStorage();
+function previewImages(files, previewId) {
+  const preview = document.getElementById(previewId);
+  preview.innerHTML = '';
+  
+  for (const file of files) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.classList.add('image-preview');
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(file);
   }
-  
-  // Actualizar botones
-  document.querySelectorAll('.stage-btn').forEach(btn => {
-    btn.classList.remove('active');
-    btn.classList.remove('btn-primary');
-    btn.classList.add('btn-secondary');
-  });
-  
-  const btnEtapa = document.getElementById(`btn${etapa.charAt(0).toUpperCase() + etapa.slice(1)}`);
-  if (btnEtapa) {
-    btnEtapa.classList.add('active', 'btn-primary');
-  }
-  
-  // Actualizar contenido
-  document.querySelectorAll('.stage-content').forEach(section => {
-    section.classList.remove('active');
-  });
-  
-  document.getElementById(etapa).classList.add('active');
-  
-  // Actualizar resumen
-  mostrarResumen(solicitudActual);
 }
 
-function actualizarEstadoEnStorage() {
+function guardarDiagnostico(e) {
+  e.preventDefault();
+  
+  const titulo = document.getElementById('tituloDiagnostico').value;
+  const comentario = document.getElementById('comentarioDiagnostico').value;
+  
+  // Obtener imágenes (simulado, en realidad deberías subirlas a un servidor)
+  const imagenes = [];
+  const files = document.getElementById('imagenesDiagnostico').files;
+  for (let i = 0; i < files.length; i++) {
+    imagenes.push({
+      name: files[i].name,
+      // En una implementación real, aquí subirías el archivo y guardarías la URL
+      url: URL.createObjectURL(files[i])
+    });
+  }
+  
+  // Crear entrada
+  const entrada = {
+    fecha: new Date().toLocaleDateString(),
+    titulo,
+    comentario,
+    imagenes
+  };
+  
+  diagnosticoEntries.push(entrada);
+  mostrarDiagnosticoEntries();
+  
+  // Limpiar formulario
+  document.getElementById('formDiagnostico').reset();
+  document.getElementById('previewDiagnostico').innerHTML = '';
+  
+  // Actualizar en solicitud actual y almacenamiento
+  solicitudActual.diagnosticoEntries = diagnosticoEntries;
+  actualizarEnStorage();
+}
+
+function mostrarDiagnosticoEntries() {
+  const container = document.getElementById('diagnosticoEntries');
+  container.innerHTML = '';
+  
+  diagnosticoEntries.forEach(entry => {
+    const entryEl = document.createElement('div');
+    entryEl.classList.add('entry-item');
+    entryEl.innerHTML = `
+      <h5>${entry.titulo} <small>(${entry.fecha})</small></h5>
+      <p>${entry.comentario}</p>
+      <div class="d-flex flex-wrap">
+        ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
+      </div>
+    `;
+    container.appendChild(entryEl);
+  });
+}
+
+function guardarMantenimiento(e) {
+  e.preventDefault();
+  
+  const titulo = document.getElementById('tituloMantenimiento').value;
+  const actividades = document.getElementById('actividadesMantenimiento').value;
+  const partes = document.getElementById('partesMantenimiento').value;
+  
+  const imagenes = [];
+  const files = document.getElementById('imagenesMantenimiento').files;
+  for (let i = 0; i < files.length; i++) {
+    imagenes.push({
+      name: files[i].name,
+      url: URL.createObjectURL(files[i])
+    });
+  }
+  
+  const entrada = {
+    fecha: new Date().toLocaleDateString(),
+    titulo,
+    actividades,
+    partes: partes || 'N/A',
+    imagenes
+  };
+  
+  mantenimientoEntries.push(entrada);
+  mostrarMantenimientoEntries();
+  
+  document.getElementById('formMantenimiento').reset();
+  document.getElementById('previewMantenimiento').innerHTML = '';
+  
+  solicitudActual.mantenimientoEntries = mantenimientoEntries;
+  actualizarEnStorage();
+}
+
+function mostrarMantenimientoEntries() {
+  const container = document.getElementById('mantenimientoEntries');
+  container.innerHTML = '';
+  
+  mantenimientoEntries.forEach(entry => {
+    const entryEl = document.createElement('div');
+    entryEl.classList.add('entry-item');
+    entryEl.innerHTML = `
+      <h5>${entry.titulo} <small>(${entry.fecha})</small></h5>
+      <p><strong>Actividades:</strong> ${entry.actividades}</p>
+      <p><strong>Partes reemplazadas:</strong> ${entry.partes}</p>
+      <div class="d-flex flex-wrap">
+        ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
+      </div>
+    `;
+    container.appendChild(entryEl);
+  });
+}
+
+function saltarAMantenimiento() {
+  // Marcar que no se realizó mantenimiento
+  solicitudActual.mantenimientoPosible = false;
+  actualizarEnStorage();
+  
+  // Saltar a informe
+  mostrarEtapa('informe');
+}
+
+function actualizarEnStorage() {
+  // Actualizar propiedades adicionales
+  solicitudActual.diagnosticoEntries = diagnosticoEntries;
+  solicitudActual.mantenimientoEntries = mantenimientoEntries;
+  
+  // Actualizar localStorage
   let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
   const index = enProceso.findIndex(s => s.numeroCaso === solicitudActual.numeroCaso);
   if (index !== -1) {
@@ -262,17 +455,141 @@ function actualizarEstadoEnStorage() {
   }
 }
 
+function generarResumenInforme() {
+  const resumen = document.getElementById('resumenInforme');
+  
+  let html = `
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Proceso Gestión de Laboratorios</h5>
+        <h6 class="mb-0">Reporte Diagnóstico y Mantenimiento Interno</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <table class="table table-bordered">
+              <tr>
+                <th>Fecha aprobación de la solicitud</th>
+                <td>${new Date().toLocaleDateString()}</td>
+              </tr>
+              <tr>
+                <th>No. Solicitud</th>
+                <td>${solicitudActual.numeroSolicitud}</td>
+              </tr>
+              <tr>
+                <th>Solicitante</th>
+                <td>[Nombre del solicitante]</td>
+              </tr>
+              <tr>
+                <th>Laboratorio</th>
+                <td>${solicitudActual.nombreLaboratorio}</td>
+              </tr>
+              <tr>
+                <th>Facultad</th>
+                <td>${solicitudActual.facultad}</td>
+              </tr>
+              <tr>
+                <th>Ubicación del equipo</th>
+                <td>Bloque ${solicitudActual.bloque}, Salón ${solicitudActual.salon}</td>
+              </tr>
+              <tr>
+                <th>Código de laboratorio</th>
+                <td>[Código]</td>
+              </tr>
+              <tr>
+                <th>Coordinador</th>
+                <td>[Nombre del coordinador]</td>
+              </tr>
+            </table>
+          </div>
+          
+          <div class="col-md-6">
+            <table class="table table-bordered">
+              <tr>
+                <th>Equipo</th>
+                <td>${solicitudActual.tipoEquipo}</td>
+              </tr>
+              <tr>
+                <th>Identificación del equipo (Placa UNAL)</th>
+                <td>${solicitudActual.placaEquipo}</td>
+              </tr>
+              <tr>
+                <th>Marca</th>
+                <td>[Marca]</td>
+              </tr>
+              <tr>
+                <th>Modelo</th>
+                <td>[Modelo]</td>
+              </tr>
+              <tr>
+                <th>Número de serie</th>
+                <td>[Número de serie]</td>
+              </tr>
+              <tr>
+                <th>Fecha de diagnóstico</th>
+                <td>${diagnosticoEntries.length > 0 ? diagnosticoEntries[0].fecha : ''}</td>
+              </tr>
+              <tr>
+                <th>Responsable de diagnóstico</th>
+                <td>${solicitudActual.tecnicoAsignado}</td>
+              </tr>
+              <tr>
+                <th>Persona que atiende la visita</th>
+                <td>[Nombre]</td>
+              </tr>
+              <tr>
+                <th>Cargo/rol</th>
+                <td>[Cargo]</td>
+              </tr>
+              <tr>
+                <th>Contacto</th>
+                <td>[Contacto]</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        
+        <h5 class="mt-4">Diagnóstico</h5>
+        <div class="mb-4">
+          ${diagnosticoEntries.map(entry => `
+            <div class="mb-3">
+              <p><strong>${entry.fecha} - ${entry.titulo}:</strong></p>
+              <p>${entry.comentario}</p>
+              ${entry.imagenes.length > 0 ? `
+                <div class="d-flex flex-wrap">
+                  ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+        
+        <h5 class="mt-4">Mantenimiento</h5>
+        ${mantenimientoEntries.length > 0 ? `
+          <div class="mb-4">
+            ${mantenimientoEntries.map(entry => `
+              <div class="mb-3">
+                <p><strong>${entry.fecha} - ${entry.titulo}:</strong></p>
+                <p>${entry.actividades}</p>
+                <p><strong>Partes reemplazadas:</strong> ${entry.partes}</p>
+                ${entry.imagenes.length > 0 ? `
+                  <div class="d-flex flex-wrap">
+                    ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : '<p>No se realizó mantenimiento</p>'}
+      </div>
+    </div>
+  `;
+  
+  resumen.innerHTML = html;
+}
+
 function finalizarProceso() {
-  const resultado = document.getElementById('resultadoAprobacion').value;
-  
-  if (!resultado) {
-    alert('Por favor seleccione un resultado final');
-    return;
-  }
-  
   solicitudActual.estado = 'Finalizado';
-  solicitudActual.resultadoFinal = resultado;
-  solicitudActual.comentarios = document.getElementById('comentariosAprobacion').value;
   
   // Mover a finalizadas
   let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];

@@ -41,11 +41,51 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       margin-bottom: 20px;
     }
-    .stage-content {
-      display: none;
+    .image-preview {
+      max-width: 200px;
+      max-height: 200px;
+      margin: 10px;
     }
-    .stage-content.active {
-      display: block;
+    .entry-item {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .btn-etapa {
+      width: 100%;
+      margin-bottom: 5px;
+      text-align: left;
+    }
+    .etapa-indicator {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: #6c757d;
+      color: white;
+      text-align: center;
+      line-height: 24px;
+      margin-right: 10px;
+    }
+    .etapa-activa .etapa-indicator {
+      background-color: #0d6efd;
+    }
+    .etapa-completa .etapa-indicator {
+      background-color: #198754;
+    }
+    .etapa-container {
+      position: relative;
+      margin-bottom: 30px;
+    }
+    .etapa-progress {
+      position: absolute;
+      height: 100%;
+      width: 2px;
+      background-color: #0d6efd;
+      left: 8px;
+      top: 1px;
+      z-index: -1;
     }
   </style>
 </head>
@@ -55,7 +95,7 @@
       <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/UNAL_Aplicaci%C3%B3n_Medell%C3%ADn.svg"
            alt="logoUNAL" class="logo me-4" onclick="location.href='web_principal.html'">
       <div class="d-flex flex-wrap gap-2">
-        <button class="btn btn-primary" onclick="location.href='crear_solicitud.html'">Crearuna nueva  solicitud</button>
+        <button class="btn btn-primary" onclick="location.href='crear_solicitud.html'">Crear solicitud</button>
         <button class="btn btn-danger" onclick="location.href='solicitudes_proceso.html'">Solicitudes en proceso</button>
         <button class="btn btn-success" onclick="location.href='solicitudes_finalizadas.html'">Solicitudes finalizadas</button>
       </div>
@@ -80,97 +120,118 @@
       </table>
     </div>
     
-    <div class="d-flex justify-content-between mb-4">
-      <button id="btnInformacion" class="btn btn-primary stage-btn active" data-stage="informacion">Información Solicitud</button>
-      <button id="btnDiagnostico" class="btn btn-secondary stage-btn" data-stage="diagnostico">Diagnóstico</button>
-      <button id="btnMantenimiento" class="btn btn-secondary stage-btn" data-stage="mantenimiento">Mantenimiento</button>
-      <button id="btnInforme" class="btn btn-secondary stage-btn" data-stage="informe">Informe</button>
-      <button id="btnAprobacion" class="btn btn-secondary stage-btn" data-stage="aprobacion">Aprobación</button>
+    <!-- Barra de progreso de etapas -->
+    <div class="etapa-container mb-4">
+      <div class="etapa-progress"></div>
+      <div>
+        <button id="btnEtapaInformacion" class="btn btn-etapa etapa-activa">
+          <span class="etapa-indicator">1</span> Información de la Solicitud
+        </button>
+        <button id="btnEtapaDiagnostico" class="btn btn-etapa">
+          <span class="etapa-indicator">2</span> Diagnóstico
+        </button>
+        <button id="btnEtapaMantenimiento" class="btn btn-etapa">
+          <span class="etapa-indicator">3</span> Mantenimiento
+        </button>
+        <button id="btnEtapaInforme" class="btn btn-etapa">
+          <span class="etapa-indicator">4</span> Informe Final
+        </button>
+      </div>
     </div>
     
-    <!-- Sección de Información -->
-    <div id="informacion" class="stage-content content-section active">
+    <!-- Información de la Solicitud -->
+    <div id="informacionSection" class="content-section">
+      <h4>Información de la Solicitud</h4>
       <div id="infoSolicitud"></div>
       <div class="d-flex justify-content-end mt-3">
         <button id="btnEditar" class="btn btn-warning me-2">Editar</button>
-        <button class="btn btn-primary" onclick="activarEtapa('diagnostico')">Continuar a Diagnóstico</button>
+        <button id="btnContinuarDiagnostico" class="btn btn-primary">Continuar a Diagnóstico</button>
       </div>
     </div>
     
-    <!-- Sección de Diagnóstico -->
-    <div id="diagnostico" class="stage-content content-section">
-      <h4>Diagnóstico del Equipo</h4>
-      <div class="mb-3">
-        <label class="form-label">Descripción del problema encontrado:</label>
-        <textarea class="form-control" rows="3" id="descDiagnostico"></textarea>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Partes/Componentes afectados:</label>
-        <textarea class="form-control" rows="2" id="partesDiagnostico"></textarea>
-      </div>
+    <!-- Diagnóstico (Collapse) -->
+    <div id="diagnosticoSection" class="content-section collapse">
+      <h4>Diagnóstico</h4>
+      
+      <!-- Historial de entradas de diagnóstico -->
+      <div id="diagnosticoEntries"></div>
+      
+      <!-- Nueva entrada de diagnóstico -->
+      <form id="formDiagnostico">
+        <div class="mb-3">
+          <label class="form-label">Título del diagnóstico</label>
+          <input type="text" class="form-control" id="tituloDiagnostico" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Comentarios</label>
+          <textarea class="form-control" rows="3" id="comentarioDiagnostico" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Subir imágenes (opcional)</label>
+          <input type="file" class="form-control" id="imagenesDiagnostico" multiple accept="image/*">
+          <div id="previewDiagnostico" class="d-flex flex-wrap mt-2"></div>
+        </div>
+        <div class="d-flex justify-content-between mt-3">
+          <button type="button" class="btn btn-secondary" id="btnVolverInformacion">Volver a Información</button>
+          <button type="submit" class="btn btn-success">Guardar Entrada</button>
+        </div>
+      </form>
+      
       <div class="d-flex justify-content-between mt-3">
-        <button class="btn btn-secondary" onclick="activarEtapa('informacion')">Volver</button>
-        <button class="btn btn-primary" onclick="activarEtapa('mantenimiento')">Continuar a Mantenimiento</button>
+        <button class="btn btn-primary" id="btnContinuarMantenimiento">Continuar a Mantenimiento</button>
+        <button class="btn btn-danger" id="btnSaltarMantenimiento">No es posible mantenimiento</button>
       </div>
     </div>
     
-    <!-- Sección de Mantenimiento -->
-    <div id="mantenimiento" class="stage-content content-section">
-      <h4>Proceso de Mantenimiento</h4>
-      <div class="mb-3">
-        <label class="form-label">Acciones realizadas:</label>
-        <textarea class="form-control" rows="3" id="accionesMantenimiento"></textarea>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Partes reemplazadas:</label>
-        <textarea class="form-control" rows="2" id="partesReemplazadas"></textarea>
-      </div>
-      <div class="d-flex justify-content-between mt-3">
-        <button class="btn btn-secondary" onclick="activarEtapa('diagnostico')">Volver</button>
-        <button class="btn btn-primary" onclick="activarEtapa('informe')">Continuar a Informe</button>
+    <!-- Mantenimiento (Collapse) -->
+    <div id="mantenimientoSection" class="content-section collapse">
+      <h4>Mantenimiento</h4>
+      
+      <!-- Historial de entradas de mantenimiento -->
+      <div id="mantenimientoEntries"></div>
+      
+      <!-- Nueva entrada de mantenimiento -->
+      <form id="formMantenimiento">
+        <div class="mb-3">
+          <label class="form-label">Título del mantenimiento</label>
+          <input type="text" class="form-control" id="tituloMantenimiento" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Actividades realizadas</label>
+          <textarea class="form-control" rows="3" id="actividadesMantenimiento" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Partes reemplazadas (opcional)</label>
+          <textarea class="form-control" rows="2" id="partesMantenimiento"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Subir imágenes (opcional)</label>
+          <input type="file" class="form-control" id="imagenesMantenimiento" multiple accept="image/*">
+          <div id="previewMantenimiento" class="d-flex flex-wrap mt-2"></div>
+        </div>
+        <div class="d-flex justify-content-between mt-3">
+          <button type="button" class="btn btn-secondary" id="btnVolverDiagnostico">Volver a Diagnóstico</button>
+          <button type="submit" class="btn btn-success">Guardar Entrada</button>
+        </div>
+      </form>
+      
+      <div class="d-flex justify-content-end mt-3">
+        <button class="btn btn-primary" id="btnContinuarInforme">Continuar a Informe</button>
       </div>
     </div>
     
-    <!-- Sección de Informe -->
-    <div id="informe" class="stage-content content-section">
-      <h4>Informe Técnico</h4>
-      <div class="mb-3">
-        <label class="form-label">Resumen del trabajo realizado:</label>
-        <textarea class="form-control" rows="4" id="resumenInforme"></textarea>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Recomendaciones:</label>
-        <textarea class="form-control" rows="2" id="recomendacionesInforme"></textarea>
-      </div>
+    <!-- Informe (Collapse) -->
+    <div id="informeSection" class="content-section collapse">
+      <h4>Informe Final</h4>
+      <div id="resumenInforme"></div>
       <div class="d-flex justify-content-between mt-3">
-        <button class="btn btn-secondary" onclick="activarEtapa('mantenimiento')">Volver</button>
-        <button class="btn btn-primary" onclick="activarEtapa('aprobacion')">Continuar a Aprobación</button>
-      </div>
-    </div>
-    
-    <!-- Sección de Aprobación -->
-    <div id="aprobacion" class="stage-content content-section">
-      <h4>Aprobación Final</h4>
-      <div class="mb-3">
-        <label class="form-label">Resultado final:</label>
-        <select class="form-select" id="resultadoAprobacion">
-          <option value="">Seleccione</option>
-          <option value="aprobado">Aprobado - Equipo funcional</option>
-          <option value="rechazado">Rechazado - Requiere más trabajo</option>
-          <option value="reemplazo">Requiere reemplazo</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Comentarios del supervisor:</label>
-        <textarea class="form-control" rows="3" id="comentariosAprobacion"></textarea>
-      </div>
-      <div class="d-flex justify-content-between mt-3">
-        <button class="btn btn-secondary" onclick="activarEtapa('informe')">Volver</button>
-        <button class="btn btn-success" onclick="finalizarProceso()">Finalizar Proceso</button>
+        <button class="btn btn-secondary" id="btnVolverMantenimiento">Volver a Mantenimiento</button>
+        <button class="btn btn-success" id="btnFinalizarProceso">Finalizar Proceso</button>
       </div>
     </div>
   </div>
 
   <script src="detalle_solicitud_forms.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
