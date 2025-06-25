@@ -68,23 +68,23 @@
 
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label">No. de la solicitud:</label>
+              <label class="form-label">No. de la solicitud<span class="text-danger">*</span>:</label>
               <input type="text" class="form-control" id="numeroSolicitud" readonly>
             </div>
             <div class="col-md-6">
-              <label class="form-label">No. del caso:</label>
+              <label class="form-label">No. del caso<span class="text-danger">*</span>:</label>
               <input type="text" class="form-control" id="numeroCaso" readonly>
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Fecha de la solicitud:</label>
+            <label class="form-label">Fecha de la solicitud<span class="text-danger">*</span>:</label>
             <input type="text" class="form-control" id="fechaSolicitud" readonly>
           </div>
 
           <div class="form-title">Consulta en el catálogo</div>
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label">Laboratorio:</label>
+              <label class="form-label">Laboratorio<span class="text-danger">*</span>:</label>
               <input type="text" class="form-control" id="nombreLaboratorio">
             </div>
             <div class="col-md-6">
@@ -94,7 +94,7 @@
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label">Facultad:</label>
+              <label class="form-label">Facultad<span class="text-danger">*</span>:</label>
               <select class="form-select" id="facultad">
                 <option value="">Seleccione</option>
                 <option value="Ciencias">Ciencias</option>
@@ -116,14 +116,14 @@
             </div>
             <div class="col-md-6">
               <label class="form-label">Número de contacto <span class="text-danger">*</span>:</label>
-              <input type="text" class="form-control" id="numeroContacto">
+              <input type="text" class="form-control" id="numeroContacto" >
             </div>
           </div>
 
           <div class="form-title">INFORMACIÓN DEL EQUIPO</div>
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label">No. del equipo <span class="text-danger">*</span>:</label>
+              <label class="form-label">No. de equipos (en la solicitud) <span class="text-danger">*</span>:</label>
               <input type="text" class="form-control" id="numEquipo">
             </div>
             <div class="col-md-6">
@@ -133,13 +133,13 @@
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label">Orden de trabajo:</label>
+              <label class="form-label">Nombre del equipo<span class="text-danger">*</span>:</label>
               <input type="text" class="form-control" id="ordenTrabajo">
             </div>
             
           </div>
           <div class="mb-3">
-            <label class="form-label">Tipo de equipo:</label>
+            <label class="form-label">Tipo de equipo<span class="text-danger">*</span>:</label>
             <select class="form-select" id="tipoEquipo">
               <option value="">Seleccione</option>
               <option value="medicion_control">Equipos de Medición y Control</option>
@@ -158,12 +158,12 @@
             </select>
           </div>
           <div class="mb-3">
-            <label class="form-label">Descripción del problema / Tipo de mantenimiento <span class="text-danger">*</span>:</label>
+            <label class="form-label">Descripción del problema / Tipo de mantenimiento :</label>
             <textarea class="form-control" rows="4" id="descripcionProblema"></textarea>
           </div>
 
           <div class="text-center mt-4">
-            <button class="btn btn-success px-4" onclick="guardarSolicitud()">Confirmar</button>
+            <button class="btn btn-success px-4" onclick="guardarSolicitud();alert()">Confirmar</button>
 
           </div>
         </div>
@@ -178,7 +178,7 @@
               <tr>
                 <th># Caso</th>
                 <th>Laboratorio</th>
-                <th>Sede</th>
+                <th>Bloque</th>
                 <th>Facultad</th>
                 <th>Tipo de Solicitud</th>
                 <th>Acciones</th>

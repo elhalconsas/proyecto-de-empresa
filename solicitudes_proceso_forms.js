@@ -61,7 +61,7 @@ function obtenerClaseEstado(estado) {
     case 'En diagnostico': return 'bg-primary';
     case 'En mantenimiento': return 'bg-primary';
     case 'En informe': return 'bg-success';
-    case 'En aprobacion ': return 'bg-danger';
+    case 'Espera Aprobacion': return 'bg-danger';
     default: return 'bg-secondary';
   }
 }

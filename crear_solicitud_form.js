@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', function () {
 // Inicializa fecha y códigos únicos
 function inicializarFormulario() {
   const fechaActual = new Date().toLocaleDateString();
-  const numeroCaso = 'CAS-' + Math.floor(1000 + Math.random() * 9000);
-  const numeroSolicitud = 'SOL-' + Math.floor(1000 + Math.random() * 9000);
+  const numeroCaso =  Math.floor(1000 + Math.random() * 9000);
+  const numeroSolicitud = Math.floor(1000 + Math.random() * 9000);
 
   document.getElementById('fechaSolicitud').value = fechaActual;
   document.getElementById('numeroCaso').value = numeroCaso;
@@ -24,7 +24,7 @@ function validarCamposObligatorios() {
     'numEquipo',
     'placaEquipo',
     'tipoEquipo',
-    'descripcionProblema'
+    
   ];
 
   return campos.every(id => {
@@ -101,7 +101,7 @@ function agregarFilaATabla(solicitud) {
 
   const btnAgregar = document.createElement('button');
   btnAgregar.className = 'btn btn-primary btn-sm';
-  btnAgregar.textContent = 'Agregar';
+  btnAgregar.textContent = 'Asignar Estudiante';
  btnAgregar.onclick = () => {
   if (selector.value === 'Seleccione técnico') {
     alert('Selecciona un técnico válido');

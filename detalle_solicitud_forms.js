@@ -134,7 +134,7 @@ function mostrarInfoSolicitud(solicitud) {
       <div class="col-md-6"><strong>Placa del Equipo:</strong> ${solicitud.placaEquipo}</div>
     </div>
     <div class="row mt-2">
-      <div class="col-md-6"><strong>Orden de Trabajo:</strong> ${solicitud.ordenTrabajo || 'N/A'}</div>
+      <div class="col-md-6"><strong>Nombre del equipo:</strong> ${solicitud.ordenTrabajo || 'N/A'}</div>
       <div class="col-md-6"><strong>Tipo de Equipo:</strong> ${solicitud.tipoEquipo}</div>
     </div>
     <div class="row mt-3">
@@ -241,7 +241,7 @@ function habilitarEdicion() {
       </div>
       <div class="row mt-2">
         <div class="col-md-6">
-          <label class="form-label">Orden de Trabajo:</label>
+          <label class="form-label">Nombre del equipo:</label>
           <input type="text" class="form-control" value="${solicitudActual.ordenTrabajo || ''}" id="editOrden">
         </div>
         <div class="col-md-6">
