@@ -3,6 +3,7 @@ let modoEdicion = false;
 let diagnosticoEntries = [];
 let mantenimientoEntries = [];
 let etapaActual = 'informacion';
+
 function validarNumerico(valor) {
   return /^\d+$/.test(valor);
 }

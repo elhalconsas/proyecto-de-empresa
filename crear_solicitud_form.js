@@ -1,3 +1,11 @@
+function validarNumerico(valor) {
+  return /^\d+$/.test(valor);
+}
+
+function validarCorreo(correo) {
+  return /@unal\.edu\.co$/.test(correo);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   inicializarFormulario();
   cargarDesdeAlmacenamiento();
@@ -23,13 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
-function validarNumerico(valor) {
-  return /^\d+$/.test(valor);
-}
 
-function validarCorreo(correo) {
-  return /@unal\.edu\.co$/.test(correo);
-}
 
 function inicializarFormulario() {
   const fechaActual = new Date().toLocaleDateString();
@@ -100,9 +102,9 @@ function validarCamposObligatorios() {
 
 
 
-// Guardar nueva solicitud
+
 function guardarSolicitud() {
-  // Validaciones
+  
   const correo = document.getElementById('correoElectronico').value;
   const numEquipo = document.getElementById('numEquipo').value;
   const placaEquipo = document.getElementById('placaEquipo').value;
