@@ -1,14 +1,38 @@
-
-document.addEventListener('DOMContentLoaded', function () {
-  cargarSolicitudesEnProceso();
+document.addEventListener('DOMContentLoaded', function() {
+  const solicitudes = JSON.parse(localStorage.getItem('enProceso')) || [];
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(solicitudes.length / itemsPerPage);
+  
+  function mostrarPagina(page) {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedItems = solicitudes.slice(start, end);
+    
+    cargarSolicitudesEnProceso(paginatedItems);
+    
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = '';
+    
+    for (let i = 1; i <= totalPages; i++) {
+      const li = document.createElement('li');
+      li.className = `page-item ${i === page ? 'active' : ''}`;
+      li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+      li.addEventListener('click', () => mostrarPagina(i));
+      pagination.appendChild(li);
+    }
+  }
+  
+  if (solicitudes.length > 0) {
+    mostrarPagina(1);
+  } else {
+    cargarSolicitudesEnProceso([]);
+  }
 });
 
 
-
-function cargarSolicitudesEnProceso() {
-  const solicitudes = JSON.parse(localStorage.getItem('enProceso')) || [];
+function cargarSolicitudesEnProceso(solicitudes) {
   const tabla = document.getElementById('tablaProceso');
-  tabla.innerHTML = ''; // Limpiar tabla previa
+  tabla.innerHTML = '';
 
   if (solicitudes.length === 0) {
     const fila = tabla.insertRow();
@@ -38,13 +62,11 @@ function cargarSolicitudesEnProceso() {
     const celdaAcciones = fila.insertCell(5);
     celdaAcciones.className = 'd-flex gap-2';
 
-    // Botón Ver Detalles
     const btnVer = document.createElement('button');
     btnVer.textContent = 'Ver Detalles';
     btnVer.className = 'btn btn-info btn-sm';
     btnVer.onclick = () => verDetalle(solicitud.numeroCaso);
 
-    // Botón Eliminar
     const btnEliminar = document.createElement('button');
     btnEliminar.textContent = 'Eliminar';
     btnEliminar.className = 'btn btn-danger btn-sm';
@@ -60,8 +82,9 @@ function obtenerClaseEstado(estado) {
     case 'Asignada': return 'bg-warning text-dark';
     case 'En diagnostico': return 'bg-primary';
     case 'En mantenimiento': return 'bg-primary';
-    case 'En informe': return 'bg-success';
-    case 'Espera Aprobacion': return 'bg-danger';
+    case 'En informe': return 'bg-info';
+    case 'En aprobacion': return 'bg-danger';
+    case 'Finalizado': return 'bg-success';
     default: return 'bg-secondary';
   }
 }
@@ -73,11 +96,9 @@ function verDetalle(numeroCaso) {
 
 function eliminarSolicitud(indice) {
   let solicitudes = JSON.parse(localStorage.getItem('enProceso')) || [];
-  if (indice >= 0 && indice < solicitudes.length) {
-    if (confirm(`¿Deseas eliminar la solicitud #${solicitudes[indice].numeroCaso}?`)) {
-      solicitudes.splice(indice, 1);
-      localStorage.setItem('enProceso', JSON.stringify(solicitudes));
-      cargarSolicitudesEnProceso(); // Recargar tabla
-    }
+  if (confirm(`¿Deseas eliminar la solicitud #${solicitudes[indice].numeroCaso}?`)) {
+    solicitudes.splice(indice, 1);
+    localStorage.setItem('enProceso', JSON.stringify(solicitudes));
+    window.location.reload();
   }
 }

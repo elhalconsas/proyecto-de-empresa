@@ -1,9 +1,36 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
   inicializarFormulario();
   cargarDesdeAlmacenamiento();
+  
+  // Validación de campos numéricos
+  document.getElementById('numeroContacto').addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^0-9]/g, '');
+  });
+  
+  document.getElementById('numEquipo').addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^0-9]/g, '');
+  });
+  
+  document.getElementById('placaEquipo').addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^0-9]/g, '');
+  });
+  
+  // Validación de correo UNAL
+  document.getElementById('correoElectronico').addEventListener('change', function(e) {
+    if (!this.value.endsWith('@unal.edu.co')) {
+      alert('Por favor ingrese un correo institucional (@unal.edu.co)');
+      this.focus();
+    }
+  });
 });
+function validarNumerico(valor) {
+  return /^\d+$/.test(valor);
+}
 
-// Inicializa fecha y códigos únicos
+function validarCorreo(correo) {
+  return /@unal\.edu\.co$/.test(correo);
+}
+
 function inicializarFormulario() {
   const fechaActual = new Date().toLocaleDateString();
   const numeroCaso =  Math.floor(1000 + Math.random() * 9000);
@@ -13,6 +40,42 @@ function inicializarFormulario() {
   document.getElementById('numeroCaso').value = numeroCaso;
   document.getElementById('numeroSolicitud').value = numeroSolicitud;
 }
+
+function cargarDesdeAlmacenamiento() {
+  const solicitudes = JSON.parse(localStorage.getItem('bdSolicitudes')) || [];
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(solicitudes.length / itemsPerPage);
+  
+  function mostrarPagina(page) {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedItems = solicitudes.slice(start, end);
+    
+    paginatedItems.forEach(solicitud => {
+      agregarFilaATabla(solicitud);
+    });
+    
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = '';
+    
+    for (let i = 1; i <= totalPages; i++) {
+      const li = document.createElement('li');
+      li.className = `page-item ${i === page ? 'active' : ''}`;
+      li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+      li.addEventListener('click', () => {
+        document.getElementById('cuerpoTabla').innerHTML = '';
+        mostrarPagina(i);
+      });
+      pagination.appendChild(li);
+    }
+  }
+  
+  if (solicitudes.length > 0) {
+    mostrarPagina(1);
+  }
+}
+
+
 function validarCamposObligatorios() {
   const campos = [
     'nombreLaboratorio',
@@ -24,6 +87,7 @@ function validarCamposObligatorios() {
     'numEquipo',
     'placaEquipo',
     'tipoEquipo',
+    'ordenTrabajo'
     
   ];
 
@@ -34,16 +98,39 @@ function validarCamposObligatorios() {
 }
 
 
-// Cargar desde "archivo" (localStorage)
-function cargarDesdeAlmacenamiento() {
-  const solicitudes = JSON.parse(localStorage.getItem('bdSolicitudes')) || [];
-  solicitudes.forEach(solicitud => {
-    agregarFilaATabla(solicitud);
-  });
-}
+
 
 // Guardar nueva solicitud
 function guardarSolicitud() {
+  // Validaciones
+  const correo = document.getElementById('correoElectronico').value;
+  const numEquipo = document.getElementById('numEquipo').value;
+  const placaEquipo = document.getElementById('placaEquipo').value;
+  const contacto = document.getElementById('numeroContacto').value;
+  
+  if (!validarCorreo(correo)) {
+    alert('El correo debe ser institucional (@unal.edu.co)');
+    return;
+  }
+  
+  if (!validarNumerico(numEquipo)) {
+    alert('Número de equipo debe ser numérico');
+    return;
+  }
+  
+  if (!validarNumerico(placaEquipo)) {
+    alert('Placa del equipo debe ser numérica');
+    return;
+  }
+  
+  if (!validarNumerico(contacto)) {
+    alert('Número de contacto debe ser numérico');
+    return;
+  }
+  
+  if (!confirm('¿Estás seguro de guardar esta solicitud?')) {
+    return;
+  }
   if (!validarCamposObligatorios()) {
     alert('Por favor completa todos los campos obligatorios marcados con *');
     return;
@@ -102,45 +189,44 @@ function agregarFilaATabla(solicitud) {
   const btnAgregar = document.createElement('button');
   btnAgregar.className = 'btn btn-primary btn-sm';
   btnAgregar.textContent = 'Asignar Estudiante';
- btnAgregar.onclick = () => {
-  if (selector.value === 'Seleccione técnico') {
-    alert('Selecciona un técnico válido');
+  btnAgregar.onclick = () => {
+  if (!confirm(`¿Deseas asignar la solicitud a ${selector.value}?`)) {
     return;
   }
 
-  // 1. Guardar en "enProceso"
-  const nuevaSolicitud = {
-    ...solicitud,
-    tecnicoAsignado: selector.value,
-    estado: 'Asignada',
-    fechaInicio: new Date().toLocaleDateString()
+    // 1. Guardar en "enProceso"
+    const nuevaSolicitud = {
+      ...solicitud,
+      tecnicoAsignado: selector.value,
+      estado: 'Asignada',
+      fechaInicio: new Date().toLocaleDateString()
+    };
+
+    let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
+    enProceso.push(nuevaSolicitud);
+    localStorage.setItem('enProceso', JSON.stringify(enProceso));
+
+    // 2. Eliminar de tabla actual (del formulario)
+    cuerpoTabla.removeChild(fila);
+
+    // 3. Eliminar también de bdSolicitudes
+    eliminarDeAlmacenamiento(solicitud.numeroCaso);
+
+    // 4. Cargar dinámicamente JS y ejecutar función (si aplica)
+    const script = document.createElement('script');
+    script.src = 'solicitudes_proceso_forms.js';
+    script.onload = () => {
+      if (typeof cargarSolicitudesEnProceso === 'function') {
+        cargarSolicitudesEnProceso();
+      }
+    };
+    script.onerror = () => {
+      console.error('No se pudo cargar solicitudes_proceso_forms.js');
+    };
+    document.body.appendChild(script);
+
+    alert(`Solicitud #${nuevaSolicitud.numeroCaso} asignada a ${nuevaSolicitud.tecnicoAsignado} y enviada a "Solicitudes en Proceso".`);
   };
-
-  let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
-  enProceso.push(nuevaSolicitud);
-  localStorage.setItem('enProceso', JSON.stringify(enProceso));
-
-  // 2. Eliminar de tabla actual (del formulario)
-  cuerpoTabla.removeChild(fila);
-
-  // 3. Eliminar también de bdSolicitudes
-  eliminarDeAlmacenamiento(solicitud.numeroCaso);
-
-  // 4. Cargar dinámicamente JS y ejecutar función (si aplica)
-  const script = document.createElement('script');
-  script.src = 'solicitudes_proceso_forms.js';
-  script.onload = () => {
-    if (typeof cargarSolicitudesEnProceso === 'function') {
-      cargarSolicitudesEnProceso();
-    }
-  };
-  script.onerror = () => {
-    console.error('No se pudo cargar solicitudes_proceso_forms.js');
-  };
-  document.body.appendChild(script);
-
-  alert(`Solicitud #${nuevaSolicitud.numeroCaso} asignada a ${nuevaSolicitud.tecnicoAsignado} y enviada a "Solicitudes en Proceso".`);
-};
 
 
 

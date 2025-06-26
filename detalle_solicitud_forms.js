@@ -3,6 +3,13 @@ let modoEdicion = false;
 let diagnosticoEntries = [];
 let mantenimientoEntries = [];
 let etapaActual = 'informacion';
+function validarNumerico(valor) {
+  return /^\d+$/.test(valor);
+}
+
+function validarCorreo(correo) {
+  return /@unal\.edu\.co$/.test(correo);
+}
 
 document.addEventListener('DOMContentLoaded', function () {
   const numeroCaso = localStorage.getItem('detalleActual');
@@ -32,6 +39,9 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function inicializarUI() {
+   if (!solicitudActual.estado) {
+    solicitudActual.estado = 'Asignada';
+  }
   mostrarResumen(solicitudActual);
   mostrarInfoSolicitud(solicitudActual);
   mostrarDiagnosticoEntries();
@@ -146,6 +156,20 @@ function mostrarInfoSolicitud(solicitud) {
 function mostrarEtapa(etapa) {
   etapaActual = etapa;
   
+  // Actualizar estado según la etapa
+  switch(etapa) {
+    case 'diagnostico':
+      solicitudActual.estado = 'En diagnostico';
+      break;
+    case 'mantenimiento':
+      solicitudActual.estado = 'En mantenimiento';
+      break;
+    case 'informe':
+      solicitudActual.estado = 'En informe';
+      break;
+  }
+  
+  
   // Ocultar todas las secciones
   document.getElementById('informacionSection').classList.add('collapse');
   document.getElementById('diagnosticoSection').classList.add('collapse');
@@ -163,6 +187,9 @@ function mostrarEtapa(etapa) {
   // Actualizar estado en solicitud
   solicitudActual.etapaActual = etapaActual;
   actualizarEnStorage();
+  
+  // Actualizar el resumen con el nuevo estado
+  mostrarResumen(solicitudActual);
   
   // Actualizar indicadores
   actualizarIndicadoresEtapas();
@@ -278,10 +305,55 @@ function habilitarEdicion() {
   
   document.getElementById('btnCancelarEdicion').addEventListener('click', cancelarEdicion);
   document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicion);
+   document.getElementById('editNumEquipo').addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^0-9]/g, '');
+  });
+  
+  document.getElementById('editPlaca').addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^0-9]/g, '');
+  });
+  
+  document.getElementById('editContacto').addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^0-9]/g, '');
+  });
+  
+  document.getElementById('editCorreo').addEventListener('change', function(e) {
+    if (!this.value.endsWith('@unal.edu.co')) {
+      alert('Por favor ingrese un correo institucional (@unal.edu.co)');
+      this.focus();
+    }
+  });
 }
 
 function guardarEdicion() {
-  // Recoger los valores editados
+  const correo = document.getElementById('editCorreo').value;
+  const numEquipo = document.getElementById('editNumEquipo').value;
+  const placaEquipo = document.getElementById('editPlaca').value;
+  const contacto = document.getElementById('editContacto').value;
+  
+  if (!validarCorreo(correo)) {
+    alert('El correo debe ser institucional (@unal.edu.co)');
+    return;
+  }
+  
+  if (!validarNumerico(numEquipo)) {
+    alert('Número de equipo debe ser numérico');
+    return;
+  }
+  
+  if (!validarNumerico(placaEquipo)) {
+    alert('Placa del equipo debe ser numérica');
+    return;
+  }
+  
+  if (!validarNumerico(contacto)) {
+    alert('Número de contacto debe ser numérico');
+    return;
+  }
+  
+  if (!confirm('¿Estás seguro de guardar los cambios?')) {
+    return;
+  }
   solicitudActual.nombreLaboratorio = document.getElementById('editLaboratorio').value;
   solicitudActual.bloque = document.getElementById('editBloque').value;
   solicitudActual.facultad = document.getElementById('editFacultad').value;
@@ -589,6 +661,9 @@ function generarResumenInforme() {
 }
 
 function finalizarProceso() {
+  if (!confirm('¿Estás seguro de finalizar el proceso? Esta acción no se puede deshacer.')) {
+    return;
+  }
   solicitudActual.estado = 'Finalizado';
   
   // Mover a finalizadas
