@@ -30,9 +30,17 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+
 function cargarSolicitudesEnProceso(solicitudes) {
   const tabla = document.getElementById('tablaProceso');
-  tabla.innerHTML = '';
+  
+  // Verifica si la tabla existe antes de intentar modificarla
+  if (!tabla) {
+    console.error("No se encontró el elemento 'tablaProceso' en el DOM.");
+    return;
+  }
+  
+  tabla.innerHTML = ''; // Limpiar la tabla antes de llenarla
 
   if (solicitudes.length === 0) {
     const fila = tabla.insertRow();
@@ -76,6 +84,7 @@ function cargarSolicitudesEnProceso(solicitudes) {
     celdaAcciones.appendChild(btnEliminar);
   });
 }
+
 
 function obtenerClaseEstado(estado) {
   switch (estado) {
