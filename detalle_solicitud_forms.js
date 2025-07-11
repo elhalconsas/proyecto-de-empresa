@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
   solicitudActual = solicitudes.find(s => s.numeroCaso === numeroCaso);
 
   if (solicitudActual) {
-    // Restaurar estado de la solicitud
     if (solicitudActual.etapaActual) {
       etapaActual = solicitudActual.etapaActual;
     }
@@ -31,32 +30,25 @@ document.addEventListener('DOMContentLoaded', function () {
       mantenimientoEntries = solicitudActual.mantenimientoEntries;
     }
     
-    // Inicializar UI
-    inicializarUI();
     
-    // Configurar eventos
+    inicializarUI();
     configurarEventos();
   }
 });
 
 function inicializarUI() {
-   if (!solicitudActual.estado) {
+  if (!solicitudActual.estado) {
     solicitudActual.estado = 'Asignada';
   }
   mostrarResumen(solicitudActual);
   mostrarInfoSolicitud(solicitudActual);
   mostrarDiagnosticoEntries();
   mostrarMantenimientoEntries();
-  
-  // Mostrar la etapa actual
   mostrarEtapa(etapaActual);
-  
-  // Actualizar indicadores de etapas
-  actualizarIndicadoresEtapas();
+  verificarEstadoContinuar();
 }
 
 function configurarEventos() {
-  // Botones de navegación
   document.getElementById('btnContinuarDiagnostico').addEventListener('click', () => mostrarEtapa('diagnostico'));
   document.getElementById('btnVolverInformacion').addEventListener('click', () => mostrarEtapa('informacion'));
   document.getElementById('btnContinuarMantenimiento').addEventListener('click', () => mostrarEtapa('mantenimiento'));
@@ -64,16 +56,14 @@ function configurarEventos() {
   document.getElementById('btnContinuarInforme').addEventListener('click', () => mostrarEtapa('informe'));
   document.getElementById('btnVolverMantenimiento').addEventListener('click', () => mostrarEtapa('mantenimiento'));
   document.getElementById('btnFinalizarProceso').addEventListener('click', finalizarProceso);
+  document.getElementById('btnInformeRevicion').addEventListener('click',() => mostrarEtapa('revision'));
   
-  // Botones de acciones
   document.getElementById('btnEditar').addEventListener('click', habilitarEdicion);
   document.getElementById('btnSaltarMantenimiento').addEventListener('click', saltarAMantenimiento);
   
-  // Configurar formularios
   document.getElementById('formDiagnostico').addEventListener('submit', guardarDiagnostico);
   document.getElementById('formMantenimiento').addEventListener('submit', guardarMantenimiento);
   
-  // Configurar previsualización de imágenes
   document.getElementById('imagenesDiagnostico').addEventListener('change', function(e) {
     previewImages(e.target.files, 'previewDiagnostico');
   });
@@ -82,11 +72,63 @@ function configurarEventos() {
     previewImages(e.target.files, 'previewMantenimiento');
   });
   
-  // Botones de etapas
-  document.getElementById('btnEtapaInformacion').addEventListener('click', () => mostrarEtapa('informacion'));
-  document.getElementById('btnEtapaDiagnostico').addEventListener('click', () => mostrarEtapa('diagnostico'));
-  document.getElementById('btnEtapaMantenimiento').addEventListener('click', () => mostrarEtapa('mantenimiento'));
-  document.getElementById('btnEtapaInforme').addEventListener('click', () => mostrarEtapa('informe'));
+  document.getElementById('btnEtapaInformacion').addEventListener('click', () => !this.disabled && mostrarEtapa('informacion'));
+  document.getElementById('btnEtapaDiagnostico').addEventListener('click', () => !this.disabled && mostrarEtapa('diagnostico'));
+  document.getElementById('btnEtapaMantenimiento').addEventListener('click', () => !this.disabled && mostrarEtapa('mantenimiento'));
+  document.getElementById('btnEtapaInforme').addEventListener('click', () => !this.disabled && mostrarEtapa('informe'));
+  document.getElementById('btnEtapaRevision').addEventListener('click', () => !this.disabled && mostrarEtapa('revision'));
+
+}
+
+function actualizarEstadoBotones() {
+  const etapas = ['informacion', 'diagnostico', 'mantenimiento', 'informe', 'revision'];
+  const indexEtapaActual = etapas.indexOf(etapaActual);
+
+  // Habilitar solo la etapa actual y las anteriores
+  etapas.forEach((etapa, index) => {
+    const btnEtapa = document.getElementById(`btnEtapa${etapa.charAt(0).toUpperCase() + etapa.slice(1)}`);
+    if (btnEtapa) {
+      btnEtapa.disabled = index > indexEtapaActual;
+    }
+  });
+
+  // Habilitar botón "Continuar" solo si se cumplen los requisitos
+  const btnContinuar = document.getElementById(`btnContinuar${etapaActual.charAt(0).toUpperCase() + etapaActual.slice(1)}`);
+  if (btnContinuar) {
+    switch (etapaActual) {
+      case 'informacion':
+        btnContinuar.disabled = !(
+          solicitudActual.nombreLaboratorio && 
+          solicitudActual.facultad && 
+          solicitudActual.salon
+        );
+        break;
+      case 'diagnostico':
+        btnContinuar.disabled = diagnosticoEntries.length === 0;
+        break;
+      case 'mantenimiento':
+        btnContinuar.disabled = mantenimientoEntries.length === 0 && 
+                              solicitudActual.mantenimientoPosible !== false;
+        break;
+      case 'informe':
+        btnContinuar.disabled = false; // Siempre habilitado para revisión
+        break;
+    }
+  }
+}
+
+function verificarEstadoContinuar() {
+  const camposRequeridos = [
+    solicitudActual.nombreLaboratorio,
+    solicitudActual.bloque,
+    solicitudActual.facultad,
+    solicitudActual.salon
+  ];
+
+  const todosCompletos = camposRequeridos.every(campo => campo && campo.trim() !== '');
+  document.getElementById('btnContinuarDiagnostico').disabled = !todosCompletos;
+  
+  actualizarIndicadoresEtapas();
 }
 
 function mostrarResumen(solicitud) {
@@ -97,28 +139,34 @@ function mostrarResumen(solicitud) {
   fila.insertCell(0).textContent = solicitud.numeroCaso;
   fila.insertCell(1).textContent = solicitud.tecnicoAsignado || 'No asignado';
   
-  // Celda de estado con badge
   const estadoCell = fila.insertCell(2);
   const badge = document.createElement('span');
-  badge.className = 'badge bg-warning text-dark';
+  badge.className = `badge ${obtenerClaseEstado(solicitud.estado)}`;
   badge.textContent = solicitud.estado;
   estadoCell.appendChild(badge);
   
   fila.insertCell(3).textContent = solicitud.fechaInicio;
 
-  // Calcular tiempo transcurrido en días y horas
   const fechaInicio = new Date(solicitud.fechaInicio);
   const hoy = new Date();
   const diffMs = hoy - fechaInicio;
-  
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   
   const tiempoCell = fila.insertCell(4);
-  tiempoCell.innerHTML = `
-    <div>${diffDays} días</div>
-    <div>${diffHours} horas</div>
-  `;
+  tiempoCell.innerHTML = `<div>${diffDays} días</div><div>${diffHours} horas</div>`;
+}
+
+function obtenerClaseEstado(estado) {
+  switch (estado) {
+    case 'Asignada': return 'bg-warning text-dark';
+    case 'En diagnostico': return 'bg-primary';
+    case 'En mantenimiento': return 'bg-primary';
+    case 'En informe': return 'bg-info';
+    case 'En aprobacion': return 'bg-danger';
+    case 'Finalizado': return 'bg-success';
+    default: return 'bg-secondary';
+  }
 }
 
 function mostrarInfoSolicitud(solicitud) {
@@ -154,66 +202,6 @@ function mostrarInfoSolicitud(solicitud) {
   `;
 }
 
-function mostrarEtapa(etapa) {
-  etapaActual = etapa;
-  
-  // Actualizar estado según la etapa
-  switch(etapa) {
-    case 'diagnostico':
-      solicitudActual.estado = 'En diagnostico';
-      break;
-    case 'mantenimiento':
-      solicitudActual.estado = 'En mantenimiento';
-      break;
-    case 'informe':
-      solicitudActual.estado = 'En informe';
-      break;
-  }
-  
-  
-  // Ocultar todas las secciones
-  document.getElementById('informacionSection').classList.add('collapse');
-  document.getElementById('diagnosticoSection').classList.add('collapse');
-  document.getElementById('mantenimientoSection').classList.add('collapse');
-  document.getElementById('informeSection').classList.add('collapse');
-  
-  // Mostrar la sección activa
-  document.getElementById(`${etapa}Section`).classList.remove('collapse');
-  
-  // Si es la etapa de informe, generar el resumen
-  if (etapa === 'informe') {
-    generarResumenInforme();
-  }
-  
-  // Actualizar estado en solicitud
-  solicitudActual.etapaActual = etapaActual;
-  actualizarEnStorage();
-  
-  // Actualizar el resumen con el nuevo estado
-  mostrarResumen(solicitudActual);
-  
-  // Actualizar indicadores
-  actualizarIndicadoresEtapas();
-}
-
-function actualizarIndicadoresEtapas() {
-  // Actualizar estado de los botones de etapas
-  const etapas = ['informacion', 'diagnostico', 'mantenimiento', 'informe'];
-  
-  etapas.forEach((etapa, index) => {
-    const btn = document.getElementById(`btnEtapa${etapa.charAt(0).toUpperCase() + etapa.slice(1)}`);
-    btn.classList.remove('etapa-activa', 'etapa-completa');
-    
-    if (etapa === etapaActual) {
-      btn.classList.add('etapa-activa');
-    }
-    
-    if (index < etapas.indexOf(etapaActual)) {
-      btn.classList.add('etapa-completa');
-    }
-  });
-}
-
 function habilitarEdicion() {
   modoEdicion = true;
   const contenedor = document.getElementById('infoSolicitud');
@@ -226,17 +214,17 @@ function habilitarEdicion() {
       <div class="row mt-2">
         <div class="col-md-6">
           <label class="form-label">Laboratorio:</label>
-          <input type="text" class="form-control" value="${solicitudActual.nombreLaboratorio}" id="editLaboratorio">
+          <input type="text" class="form-control" value="${solicitudActual.nombreLaboratorio}" id="editLaboratorio" required>
         </div>
         <div class="col-md-6">
           <label class="form-label">Bloque:</label>
-          <input type="text" class="form-control" value="${solicitudActual.bloque}" id="editBloque">
+          <input type="text" class="form-control" value="${solicitudActual.bloque}" id="editBloque" required>
         </div>
       </div>
       <div class="row mt-2">
         <div class="col-md-6">
           <label class="form-label">Facultad:</label>
-          <select class="form-select" id="editFacultad">
+          <select class="form-select" id="editFacultad" required>
             <option value="Ciencias" ${solicitudActual.facultad === 'Ciencias' ? 'selected' : ''}>Ciencias</option>
             <option value="Ciencias Agrarias" ${solicitudActual.facultad === 'Ciencias Agrarias' ? 'selected' : ''}>Ciencias Agrarias</option>
             <option value="Minas" ${solicitudActual.facultad === 'Minas' ? 'selected' : ''}>Minas</option>
@@ -244,27 +232,27 @@ function habilitarEdicion() {
         </div>
         <div class="col-md-6">
           <label class="form-label">Salón:</label>
-          <input type="text" class="form-control" value="${solicitudActual.salon}" id="editSalon">
+          <input type="text" class="form-control" value="${solicitudActual.salon}" id="editSalon" required>
         </div>
       </div>
       <div class="row mt-2">
         <div class="col-md-6">
           <label class="form-label">Correo Electrónico:</label>
-          <input type="email" class="form-control" value="${solicitudActual.correoElectronico}" id="editCorreo">
+          <input type="email" class="form-control" value="${solicitudActual.correoElectronico}" id="editCorreo" required>
         </div>
         <div class="col-md-6">
           <label class="form-label">Contacto:</label>
-          <input type="text" class="form-control" value="${solicitudActual.numeroContacto}" id="editContacto">
+          <input type="text" class="form-control" value="${solicitudActual.numeroContacto}" id="editContacto" required>
         </div>
       </div>
       <div class="row mt-2">
         <div class="col-md-6">
           <label class="form-label">Número de Equipo:</label>
-          <input type="text" class="form-control" value="${solicitudActual.numEquipo}" id="editNumEquipo">
+          <input type="text" class="form-control" value="${solicitudActual.numEquipo}" id="editNumEquipo" required>
         </div>
         <div class="col-md-6">
           <label class="form-label">Placa del Equipo:</label>
-          <input type="text" class="form-control" value="${solicitudActual.placaEquipo}" id="editPlaca">
+          <input type="text" class="form-control" value="${solicitudActual.placaEquipo}" id="editPlaca" required>
         </div>
       </div>
       <div class="row mt-2">
@@ -276,18 +264,8 @@ function habilitarEdicion() {
           <label class="form-label">Tipo de Equipo:</label>
           <select class="form-select" id="editTipoEquipo">
             <option value="medicion_control" ${solicitudActual.tipoEquipo === 'medicion_control' ? 'selected' : ''}>Equipos de Medición y Control</option>
-            <option value="opticos" ${solicitudActual.tipoEquipo === 'opticos' ? 'selected' : ''}>Instrumentos Ópticos</option>
-            <option value="electricos" ${solicitudActual.tipoEquipo === 'electricos' ? 'selected' : ''}>Equipos Eléctricos</option>
-            <option value="calentamiento" ${solicitudActual.tipoEquipo === 'calentamiento' ? 'selected' : ''}>Equipos de Calentamiento</option>
-            <option value="herramientas" ${solicitudActual.tipoEquipo === 'herramientas' ? 'selected' : ''}>Herramientas</option>
-            <option value="tecnologia_computacion" ${solicitudActual.tipoEquipo === 'tecnologia_computacion' ? 'selected' : ''}>Tecnología y Computación</option>
-            <option value="refrigeracion" ${solicitudActual.tipoEquipo === 'refrigeracion' ? 'selected' : ''}>Equipos de Refrigeración</option>
-            <option value="mecanicos" ${solicitudActual.tipoEquipo === 'mecanicos' ? 'selected' : ''}>Equipos Mecánicos</option>
-            <option value="accesorios_laboratorio" ${solicitudActual.tipoEquipo === 'accesorios_laboratorio' ? 'selected' : ''}>Accesorios de Laboratorio</option>
-            <option value="componentes_electronicos" ${solicitudActual.tipoEquipo === 'componentes_electronicos' ? 'selected' : ''}>Componentes Electrónicos</option>
-            <option value="limpieza" ${solicitudActual.tipoEquipo === 'limpieza' ? 'selected' : ''}>Equipos de Limpieza</option>
-            <option value="equipos_laboratorio" ${solicitudActual.tipoEquipo === 'equipos_laboratorio' ? 'selected' : ''}>Equipos de Laboratorio</option>
-            <option value="otros" ${solicitudActual.tipoEquipo === 'otros' ? 'selected' : ''}>Otros</option>
+            <!-- Resto de opciones... -->
+            -{}
           </select>
         </div>
       </div>
@@ -306,7 +284,9 @@ function habilitarEdicion() {
   
   document.getElementById('btnCancelarEdicion').addEventListener('click', cancelarEdicion);
   document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicion);
-   document.getElementById('editNumEquipo').addEventListener('input', function(e) {
+  
+  // Validaciones en tiempo real
+  document.getElementById('editNumEquipo').addEventListener('input', function(e) {
     this.value = this.value.replace(/[^0-9]/g, '');
   });
   
@@ -355,6 +335,7 @@ function guardarEdicion() {
   if (!confirm('¿Estás seguro de guardar los cambios?')) {
     return;
   }
+
   solicitudActual.nombreLaboratorio = document.getElementById('editLaboratorio').value;
   solicitudActual.bloque = document.getElementById('editBloque').value;
   solicitudActual.facultad = document.getElementById('editFacultad').value;
@@ -367,13 +348,13 @@ function guardarEdicion() {
   solicitudActual.tipoEquipo = document.getElementById('editTipoEquipo').value;
   solicitudActual.descripcionProblema = document.getElementById('editDescripcion').value;
 
-  // Actualizar localStorage
-  actualizarEnStorage();
 
-  // Volver a modo visualización
+  actualizarEnStorage();
+  
   modoEdicion = false;
   mostrarInfoSolicitud(solicitudActual);
   mostrarResumen(solicitudActual);
+  verificarEstadoContinuar();
 }
 
 function cancelarEdicion() {
@@ -395,6 +376,180 @@ function previewImages(files, previewId) {
     };
     reader.readAsDataURL(file);
   }
+}
+
+function finalizarRevision() {
+  if (!confirm('¿Estás seguro de finalizar la revisión? Esta acción moverá la solicitud a finalizadas.')) {
+    return;
+  }
+  
+  // Guardar datos adicionales
+  solicitudActual.marcaEquipo = document.getElementById('marcaEquipo').value;
+  solicitudActual.modeloEquipo = document.getElementById('modeloEquipo').value;
+  solicitudActual.serieEquipo = document.getElementById('serieEquipo').value;
+  solicitudActual.personaAtendio = document.getElementById('personaAtendio').value;
+  solicitudActual.cargoPersona = document.getElementById('cargoPersona').value;
+  solicitudActual.contactoPersona = document.getElementById('contactoPersona').value;
+  solicitudActual.retroalimentacion = document.getElementById('retroalimentacion').value;
+  solicitudActual.estado = 'Finalizado';
+  solicitudActual.fechaFinalizacion = new Date().toLocaleDateString();
+  
+  // Mover a finalizadas
+  let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
+  enProceso = enProceso.filter(s => s.numeroCaso !== solicitudActual.numeroCaso);
+  localStorage.setItem('enProceso', JSON.stringify(enProceso));
+  
+  let finalizadas = JSON.parse(localStorage.getItem('finalizadas')) || [];
+  finalizadas.push(solicitudActual);
+  localStorage.setItem('finalizadas', JSON.stringify(finalizadas));
+  
+  alert('Revisión finalizada. La solicitud ha sido movida a "Solicitudes Finalizadas".');
+  window.location.href = 'solicitudes_finalizadas.html';
+}
+
+function generarResumenInforme() {
+  const revisionSection = document.getElementById('resumenInforme');
+  
+  let html = `    
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h5>Proceso Gestión de Laboratorios</h5>
+        <h6>Reporte Diagnóstico y Mantenimiento Interno</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <table class="table table-bordered">
+              <tr>
+                <th>Fecha aprobación de la solicitud</th>
+                <td>${new Date().toLocaleDateString()}</td>
+              </tr>
+              <tr>
+                <th>No. Solicitud</th>
+                <td>${solicitudActual.numeroSolicitud}</td>
+              </tr>
+              <tr>
+                <th>Solicitante</th>
+                <td><input type="text" class="form-control" id="solicitante" value=""></td>
+              </tr>
+              <tr>
+                <th>Laboratorio</th>
+                <td>${solicitudActual.nombreLaboratorio}</td>
+              </tr>
+              <tr>
+                <th>Facultad</th>
+                <td>${solicitudActual.facultad}</td>
+              </tr>
+              <tr>
+                <th>Ubicación del equipo</th>
+                <td>Bloque ${solicitudActual.bloque}, Salón ${solicitudActual.salon}</td>
+              </tr>
+              <tr>
+                <th>Código de laboratorio</th>
+                <td><input type="text" class="form-control" id="codigoLaboratorio" value=""></td>
+              </tr>
+              <tr>
+                <th>Coordinador</th>
+                <td><input type="text" class="form-control" id="cordinador" value=""></td>
+              </tr>
+            </table>
+          </div>
+          
+          <div class="col-md-6">
+            
+            <table class="table table-bordered">
+              <tr>
+                <th>Equipo</th>
+                <td>${solicitudActual.tipoEquipo}</td>
+              </tr>
+              <tr>
+                <th>Identificación del equipo (Placa UNAL)</th>
+                <td>${solicitudActual.placaEquipo}</td>
+              </tr>
+              <tr>
+                <th>Marca</th>
+                <td><input type="text" class="form-control" id="marcaEquipo" value=""></td>
+              </tr>
+              <tr>
+                <th>Modelo</th>
+                <td><input type="text" class="form-control" id="modeloEquipo" value=""></td>
+              </tr>
+              <tr>
+                <th>Número de serie</th>
+                <td><input type="text" class="form-control" id="serieEquipo" value=""></td>
+              </tr>
+              <tr>
+                <th>Fecha de diagnóstico</th>
+                <td>${diagnosticoEntries.length > 0 ? diagnosticoEntries[0].fecha : ''}</td>
+              </tr>
+              <tr>
+                <th>Responsable de diagnóstico</th>
+                <td>${solicitudActual.tecnicoAsignado}</td>
+              </tr>
+              <tr>
+                <th>Persona que atiende la visita</th>
+                <td><input type="text" class="form-control" id="personaAtendio" value=""></td>
+              </tr>
+              <tr>
+                <th>Cargo/rol</th>
+                <td><input type="text" class="form-control" id="cargoPersona" value=""></td>
+              </tr>
+              <tr>
+                <th>Contacto</th>
+                <td><input type="text" class="form-control" id="contactoPersona" value=""></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        
+        <h5 class="mt-4">Diagnóstico</h5>
+        ${diagnosticoEntries.map(entry => `
+          <div class="mb-3">
+            <p><strong>${entry.fecha} - ${entry.titulo}:</strong></p>
+            <p>${entry.comentario}</p>
+            ${entry.imagenes.length > 0 ? `
+              <div class="d-flex flex-wrap">
+                ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `).join('')}
+        
+        <h5 class="mt-4">Mantenimiento</h5>
+        ${mantenimientoEntries.length > 0 ? `
+          <div class="mb-4">
+            ${mantenimientoEntries.map(entry => `
+              <div class="mb-3">
+                <p><strong>${entry.fecha} - ${entry.titulo}:</strong></p>
+                <p>${entry.actividades}</p>
+                <p><strong>Partes reemplazadas:</strong> ${entry.partes}</p>
+                ${entry.imagenes.length > 0 ? `
+                  <div class="d-flex flex-wrap">
+                    ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : '<p>No se realizó mantenimiento</p>'}
+      </div>
+    </div>
+   
+  `;
+  revisionSection.innerHTML = html
+}
+
+function volverADiagnostico() {
+  if (!confirm('¿Estás seguro de devolver esta solicitud a diagnóstico? Todos los avances se mantendrán.')) {
+    return;
+  }
+  
+  solicitudActual.estado = 'En diagnostico';
+  solicitudActual.etapaActual = 'diagnostico';
+  actualizarEnStorage();
+  
+  // Mostrar etapa de diagnóstico
+  mostrarEtapa('diagnostico');
 }
 
 function guardarDiagnostico(e) {
@@ -432,8 +587,73 @@ function guardarDiagnostico(e) {
   // Actualizar en solicitud actual y almacenamiento
   solicitudActual.diagnosticoEntries = diagnosticoEntries;
   actualizarEnStorage();
+  actualizarEstadoBotones();
+}
+// ... (resto de funciones existentes: cancelarEdicion, previewImages, guardarDiagnostico, etc.) ...
+
+function mostrarEtapa(etapa) {
+  etapaActual = etapa;
+  
+  switch(etapa) {
+    case 'diagnostico':
+      solicitudActual.estado = 'En diagnostico';
+      break;
+    case 'mantenimiento':
+      solicitudActual.estado = 'En mantenimiento';
+      break;
+    case 'informe':
+      solicitudActual.estado = 'En informe';
+      break;
+    case 'revision':
+      solicitudActual.estado = 'En aprobacion';
+      generarResumenRevision(); 
+
+      break;
+  }
+  
+  document.getElementById('informacionSection').classList.add('collapse');
+  document.getElementById('diagnosticoSection').classList.add('collapse');
+  document.getElementById('mantenimientoSection').classList.add('collapse');
+  document.getElementById('informeSection').classList.add('collapse');
+  
+  document.getElementById(`${etapa}Section`).classList.remove('collapse');
+  
+  if (etapa === 'informe') {
+    generarResumenInforme();
+  }
+  
+  if (etapa === 'revision') {
+    generarInformeFinal();
+  }
+  solicitudActual.etapaActual = etapaActual;
+  actualizarEnStorage();
+  mostrarResumen(solicitudActual);
+  actualizarIndicadoresEtapas();
+  verificarEstadoContinuar();
 }
 
+function actualizarIndicadoresEtapas() {
+  const etapas = ['informacion', 'diagnostico', 'mantenimiento', 'informe', 'revision'];
+  const indexEtapaActual = etapas.indexOf(etapaActual);
+  
+  etapas.forEach((etapa, index) => {
+    const btn = document.getElementById(`btnEtapa${etapa.charAt(0).toUpperCase() + etapa.slice(1)}`);
+    if (btn) {
+      btn.classList.remove('etapa-activa', 'etapa-completa');
+      btn.disabled = index > indexEtapaActual;
+      
+      if (etapa === etapaActual) {
+        btn.classList.add('etapa-activa');
+      }
+      
+      if (index < indexEtapaActual) {
+        btn.classList.add('etapa-completa');
+      }
+    }
+  });
+}
+
+// ... (resto de funciones del archivo) ...
 function mostrarDiagnosticoEntries() {
   const container = document.getElementById('diagnosticoEntries');
   container.innerHTML = '';
@@ -484,7 +704,9 @@ function guardarMantenimiento(e) {
   
   solicitudActual.mantenimientoEntries = mantenimientoEntries;
   actualizarEnStorage();
+  actualizarEstadoBotones();
 }
+
 
 function mostrarMantenimientoEntries() {
   const container = document.getElementById('mantenimientoEntries');
@@ -528,8 +750,8 @@ function actualizarEnStorage() {
   }
 }
 
-function generarResumenInforme() {
-  const resumen = document.getElementById('resumenInforme');
+function generarInformeFinal() {
+  const resumen = document.getElementById('mostrarInformeFinal');
   
   let html = `
     <div class="card mb-4">
@@ -665,9 +887,10 @@ function finalizarProceso() {
   if (!confirm('¿Estás seguro de finalizar el proceso? Esta acción no se puede deshacer.')) {
     return;
   }
-  solicitudActual.estado = 'Finalizado';
   
-  // Mover a finalizadas
+  solicitudActual.estado = 'Finalizado';
+  solicitudActual.fechaFinalizacion = new Date().toLocaleDateString();
+  
   let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
   enProceso = enProceso.filter(s => s.numeroCaso !== solicitudActual.numeroCaso);
   localStorage.setItem('enProceso', JSON.stringify(enProceso));

@@ -6,6 +6,20 @@
   <title>Detalle de Solicitud</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
+    .btn-etapa:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #f8f9fa;
+      color: #6c757d;
+      border-color: #dee2e6;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #0d6efd;
+      border-color: #0d6efd;
+    }
     body {
       padding-top: 130px;
     }
@@ -81,9 +95,9 @@
     .etapa-progress {
       position: absolute;
       height: 100%;
-      width: 2px;
+      width: 0.3%;
       background-color: #0d6efd;
-      left: 8px;
+      left: -10px;
       top: 1px;
       z-index: -1;
     }
@@ -126,39 +140,39 @@
       </table>
     </div>
     
-   
+    
     <div class="etapa-container mb-4">
       <div class="etapa-progress"></div>
       <div>
-        <button id="btnEtapaInformacion" class="btn btn-etapa etapa-activa">
+        <button id="btnEtapaInformacion" class="btn btn-etapa etapa-activa" disabled>
           <span class="etapa-indicator">1</span> Información de la Solicitud
         </button>
-        <button id="btnEtapaDiagnostico" class="btn btn-etapa">
+        <button id="btnEtapaDiagnostico" class="btn btn-etapa"  disabled title="Complete la etapa anterior para habilitar">
           <span class="etapa-indicator">2</span> Diagnóstico
         </button>
-        <button id="btnEtapaMantenimiento" class="btn btn-etapa">
+        <button id="btnEtapaMantenimiento" class="btn btn-etapa" disabled>
           <span class="etapa-indicator">3</span> Mantenimiento
         </button>
-        <button id="btnEtapaInforme" class="btn btn-etapa">
+        <button id="btnEtapaInforme" class="btn btn-etapa" disabled>
           <span class="etapa-indicator">4</span> Manejo del informe
         </button>
-        <button id="btnEtapaInforme" class="btn btn-etapa">
-          <span class="etapa-indicator">5</span> Revicion del informe 
+        <button id="btnEtapaRevision" class="btn btn-etapa" disabled>
+          <span class="etapa-indicator">5</span> Revisión del informe
         </button>
-      </div>
     </div>
+  </div>
     
     
     <div id="informacionSection" class="content-section">
       <h4>Información de la Solicitud</h4>
       <div id="infoSolicitud">
-        <!-- infor de la solicitus del JS -->
+        <!-- Información de la solicitud (se llena con JS) -->
       </div>
-      <div class="d-flex justify-content-end mt-3">
-        <button id="btnEditar" class="btn btn-warning me-2">Actualizar</button>
-        <button id="btnContinuarDiagnostico" class="btn btn-primary"disabled>Continuar a Diagnóstico</button>
+      <div class="d-flex justify-content-end mt-3 gap-2">
+        <button id="btnEditar" class="btn btn-warning me-2">Actualizar Información</button>
+        <button id="btnContinuarDiagnostico" class="btn btn-primary" >Continuar a Diagnóstico</button>
       </div>
-    </div>
+    </div>                
     
 
     <div id="diagnosticoSection" class="content-section collapse">
@@ -189,8 +203,8 @@
       </form>
       
        <div class="d-flex justify-content-between mt-3">
-    <button class="btn btn-primary" id="btnContinuarMantenimiento"disabled>Continuar a Mantenimiento</button>
-    <button class="btn btn-danger" id="btnSaltarMantenimiento"disabled>No es posible mantenimiento</button>
+    <button class="btn btn-primary" id="btnContinuarMantenimiento">Continuar a Mantenimiento</button>
+    <button class="btn btn-danger" id="btnSaltarMantenimiento">No es posible mantenimiento</button>
   </div>
     </div>
     
@@ -224,19 +238,31 @@
       </form>
       
       <div class="d-flex justify-content-end mt-3">
-        <button class="btn btn-primary" id="btnContinuarInforme"disabled>Continuar a Informe</button>
+        <button class="btn btn-primary" id="btnContinuarInforme">Continuar a Informe</button>
       </div>
     </div>
     
   
     <div id="informeSection" class="content-section collapse">
-      <h4>Informe Final</h4>
-      <div id="resumenInforme"></div>
+      <h4>Utimos Detalles del Informe</h4>
+      <div id="resumenInforme">
+        <!-- llenado con JS -->
+      </div>
       <div class="d-flex justify-content-between mt-3">
         <button class="btn btn-secondary" id="btnVolverMantenimiento">Volver a Mantenimiento</button>
-        <button class="btn btn-success" id="btnFinalizarProceso">Finalizar Proceso</button>
+        <button class="btn btn-primary" id="btnInformeRevicion">Continuar a Revicion</button>
       </div>
     </div>
+
+    <div id="infromeRevicion" class="content-section collapse">
+      <H4>Revicion y Comentarios del Informe</H4>
+        <div id="mostrarInformeFinal" > 
+        <!--  llenado con js-->hola a todps 
+        </div>
+      <div class="d-flex justify-content-between mt-3">
+        <button class="btn btn-secondary" id="btnVolverInforme">Volver a Manejo Del informe</button>
+        <button class="btn btn-success" id="btnFinalizarProceso">Finalizar Proceso</button>
+      </div>
   </div>
   
   <script src="contadores.js" defer></script>

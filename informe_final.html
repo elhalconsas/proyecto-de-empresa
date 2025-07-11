@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Informe Final</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      padding-top: 130px;
+    }
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #d8d5d5;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    .logo {
+      height: 90px;
+      cursor: pointer;
+    }
+    .image-preview {
+      max-width: 200px;
+      max-height: 200px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header class="p-3 d-flex flex-wrap align-items-center justify-content-between">
+    <div class="d-flex align-items-center">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/UNAL_Aplicaci%C3%B3n_Medell%C3%ADn.svg"
+           alt="logoUNAL" class="logo me-4" onclick="location.href='web_principal.html'">
+      <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-primary" onclick="location.href='crear_solicitud.html'">
+        Crear una nueva solicitud <span id="contadorNuevas" class="badge bg-secondary badge-counter">0</span>
+      </button>
+      <button class="btn btn-danger" onclick="location.href='solicitudes_proceso.html'">
+        Solicitudes en proceso <span id="contadorProceso" class="badge bg-secondary badge-counter">0</span>
+      </button>
+      <button class="btn btn-success" onclick="location.href='solicitudes_finalizadas.html'">
+        Solicitudes finalizadas <span id="contadorFinalizadas" class="badge bg-secondary badge-counter">0</span>
+      </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container mt-4">
+    <div id="informeFinal" class="mb-4">
+      <!-- Se llena con JavaScript -->
+    </div>
+    <div class="text-center">
+      <button class="btn btn-secondary" onclick="window.location.href='solicitudes_finalizadas.html'">
+        Volver a Solicitudes Finalizadas
+      </button>
+    </div>
+  </div>
+
+  <script src="contadores.js" defer></script>
+  <script src="informe_final.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
