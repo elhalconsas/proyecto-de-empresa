@@ -1,16 +1,238 @@
+// Mostrar entradas de diagnóstico
+function mostrarDiagnosticos() {
+  const cont = document.getElementById('diagnosticoEntries');
+  if (!cont) return;
+  cont.innerHTML = '';
+  if (!solicitudActual.diagnosticos || solicitudActual.diagnosticos.length === 0) {
+    cont.innerHTML = '<div class="text-muted">No hay diagnósticos registrados.</div>';
+    return;
+  }
+  solicitudActual.diagnosticos.forEach((d, i) => {
+    const div = document.createElement('div');
+    div.className = 'entry-item';
+    div.innerHTML = `<strong>${d.titulo}</strong> <span class='text-secondary' style='font-size:0.9em'>(${new Date(d.fecha).toLocaleString()})</span><br>${d.comentario}<br>` +
+      (d.imagenes && d.imagenes.length > 0 ? `<div>Imágenes: ${d.imagenes.map(img => `<span class='badge bg-info text-dark me-1'>${img}</span>`).join('')}</div>` : '');
+    cont.appendChild(div);
+  });
+}
+
+// Mostrar entradas de mantenimiento
+function mostrarMantenimientos() {
+  const cont = document.getElementById('mantenimientoEntries');
+  if (!cont) return;
+  cont.innerHTML = '';
+  if (!solicitudActual.mantenimientos || solicitudActual.mantenimientos.length === 0) {
+    cont.innerHTML = '<div class="text-muted">No hay mantenimientos registrados.</div>';
+    return;
+  }
+  solicitudActual.mantenimientos.forEach((m, i) => {
+    const div = document.createElement('div');
+    div.className = 'entry-item';
+    div.innerHTML = `<label>Título de la solicitud:</label><strong>${m.titulo}</strong> <span class='text-secondary' style='font-size:0.9em'>(${new Date(m.fecha).toLocaleString()})</span><br>` +
+      `<b>Actividades realizadas:</b> ${m.actividades}<br>` +
+      (m.partes ? `<b>Partes reemplazadas:</b> ${m.partes}<br>` : '') +
+      (m.imagenes && m.imagenes.length > 0 ? `<div>Imágenes: ${m.imagenes.map(img => `<span class='badge bg-info text-dark me-1'>${img}</span>`).join('')}</div>` : '');
+    cont.appendChild(div);
+  });
+}
+// Guardar datos de diagnóstico en localStorage y mostrar
+function guardarDiagnostico(e) {
+  e.preventDefault();
+  const titulo = document.getElementById('tituloDiagnostico').value;
+  const comentario = document.getElementById('comentarioDiagnostico').value;
+  // Imágenes (solo nombres, para ejemplo)
+  const imagenesInput = document.getElementById('imagenesDiagnostico');
+  const imagenes = [];
+  if (imagenesInput && imagenesInput.files) {
+    for (let i = 0; i < imagenesInput.files.length; i++) {
+      imagenes.push(imagenesInput.files[i].name);
+    }
+  }
+  if (!solicitudActual.diagnosticos) solicitudActual.diagnosticos = [];
+  solicitudActual.diagnosticos.push({ titulo, comentario, imagenes, fecha: new Date().toISOString() });
+  // Guardar en localStorage
+  let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
+  const index = enProceso.findIndex(s => s.numeroCaso === solicitudActual.numeroCaso);
+  if (index !== -1) {
+    enProceso[index] = solicitudActual;
+    localStorage.setItem('enProceso', JSON.stringify(enProceso));
+  }
+  alert('Diagnóstico guardado correctamente.');
+  document.getElementById('formDiagnostico').reset();
+  mostrarDiagnosticos();
+}
+
+// Guardar datos de mantenimiento en localStorage y mostrar
+function guardarMantenimiento(e) {
+  e.preventDefault();
+  const titulo = document.getElementById('tituloMantenimiento').value;
+  const actividades = document.getElementById('actividadesMantenimiento').value;
+  const partes = document.getElementById('partesMantenimiento').value;
+  // Imágenes (solo nombres, para ejemplo)
+  const imagenesInput = document.getElementById('imagenesMantenimiento');
+  const imagenes = [];
+  if (imagenesInput && imagenesInput.files) {
+    for (let i = 0; i < imagenesInput.files.length; i++) {
+      imagenes.push(imagenesInput.files[i].name);
+    }
+  }
+  if (!solicitudActual.mantenimientos) solicitudActual.mantenimientos = [];
+  solicitudActual.mantenimientos.push({ titulo, actividades, partes, imagenes, fecha: new Date().toISOString() });
+  // Guardar en localStorage
+  let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
+  const index = enProceso.findIndex(s => s.numeroCaso === solicitudActual.numeroCaso);
+  if (index !== -1) {
+    enProceso[index] = solicitudActual;
+    localStorage.setItem('enProceso', JSON.stringify(enProceso));
+  }
+  alert('Mantenimiento guardado correctamente.');
+  document.getElementById('formMantenimiento').reset();
+  mostrarMantenimientos();
+}
+// Mostrar/ocultar secciones al avanzar de etapa
+document.addEventListener('DOMContentLoaded', function() {
+  // Unificar listeners de botones de volver para evitar duplicados y asegurar compatibilidad
+  const volverConfig = [
+    {
+      btn: 'btnVolverInformacion',
+      ocultar: 'diagnosticoSection',
+      mostrar: 'informacionSection'
+    },
+    {
+      btn: 'btnVolverDiagnostico',
+      ocultar: 'mantenimientoSection',
+      mostrar: 'diagnosticoSection'
+    },
+    {
+      btn: 'btnVolverMantenimiento',
+      ocultar: 'informeSection',
+      mostrar: 'mantenimientoSection'
+    },
+    {
+      btn: 'btnVolverInforme',
+      ocultar: 'infromeRevicion',
+      mostrar: 'informeSection'
+    }
+  ];
+  volverConfig.forEach(cfg => {
+    const btn = document.getElementById(cfg.btn);
+    if (btn) {
+      btn.addEventListener('click', function() {
+        const ocultar = document.getElementById(cfg.ocultar);
+        if (ocultar) ocultar.classList.add('collapse');
+        const mostrar = document.getElementById(cfg.mostrar);
+        if (mostrar) mostrar.classList.remove('collapse');
+      });
+    }
+  });
+  // Guardar diagnóstico
+  const formDiagnostico = document.getElementById('formDiagnostico');
+  if (formDiagnostico) {
+    formDiagnostico.addEventListener('submit', guardarDiagnostico);
+  }
+
+  // Guardar mantenimiento
+  const formMantenimiento = document.getElementById('formMantenimiento');
+  if (formMantenimiento) {
+    formMantenimiento.addEventListener('submit', guardarMantenimiento);
+  }
+  // Botón para pasar de información a diagnóstico
+  const btnContinuarDiagnostico = document.getElementById('btnContinuarDiagnostico');
+  if (btnContinuarDiagnostico) {
+    btnContinuarDiagnostico.addEventListener('click', function() {
+      // Oculta la sección de información
+      const infoSection = document.getElementById('informacionSection');
+      if (infoSection) infoSection.classList.add('collapse');
+      // Muestra la sección de diagnóstico
+      const diagSection = document.getElementById('diagnosticoSection');
+      if (diagSection) diagSection.classList.remove('collapse');
+      // Actualiza estado
+      actualizarEtapa('En diagnostico');
+    });
+  }
+
+  // Botón para volver de diagnóstico a información
+  const btnVolverInformacion = document.getElementById('btnVolverInformacion');
+  if (btnVolverInformacion) {
+    btnVolverInformacion.addEventListener('click', function() {
+      // Oculta diagnóstico
+      const diagSection = document.getElementById('diagnosticoSection');
+      if (diagSection) diagSection.classList.add('collapse');
+      // Muestra información
+      const infoSection = document.getElementById('informacionSection');
+      if (infoSection) infoSection.classList.remove('collapse');
+    });
+  }
+
+  // Botón para pasar de diagnóstico a mantenimiento
+  const btnContinuarMantenimiento = document.getElementById('btnContinuarMantenimiento');
+  if (btnContinuarMantenimiento) {
+    btnContinuarMantenimiento.addEventListener('click', function() {
+      // Oculta la sección de diagnóstico
+      const diagSection = document.getElementById('diagnosticoSection');
+      if (diagSection) diagSection.classList.add('collapse');
+      // Muestra la sección de mantenimiento
+      const mantSection = document.getElementById('mantenimientoSection');
+      if (mantSection) mantSection.classList.remove('collapse');
+      // Actualiza estado
+      actualizarEtapa('En mantenimiento');
+    });
+  }
+  // Botón para pasar de mantenimiento a informe
+  const btnContinuarInforme = document.getElementById('btnContinuarInforme');
+  if (btnContinuarInforme) {
+    btnContinuarInforme.addEventListener('click', function() {
+      // Oculta la sección de mantenimiento
+      const mantSection = document.getElementById('mantenimientoSection');
+      if (mantSection) mantSection.classList.add('collapse');
+      // Muestra la sección de informe
+      const informeSection = document.getElementById('informeSection');
+      if (informeSection) informeSection.classList.remove('collapse');
+      // Actualiza estado
+      actualizarEtapa('En informe');
+    });
+  }
+
+  // Botón para pasar de informe a revisión
+  const btnInformeRevision = document.getElementById('btnInformeRevision');
+  if (btnInformeRevision) {
+    btnInformeRevision.addEventListener('click', function() {
+      // Oculta la sección de informe
+      const informeSection = document.getElementById('informeSection');
+      if (informeSection) informeSection.classList.add('collapse');
+      // Muestra la sección de revisión
+      const revSection = document.getElementById('infromeRevicion');
+      if (revSection) revSection.classList.remove('collapse');
+      // Actualiza estado
+      actualizarEtapa('En aprobacion');
+    });
+  }
+
+  // Botón para finalizar proceso
+  const btnFinalizarProceso = document.getElementById('btnFinalizarProceso');
+  if (btnFinalizarProceso) {
+    btnFinalizarProceso.addEventListener('click', function() {
+      actualizarEtapa('Finalizado');
+      alert('¡Proceso finalizado!');
+    });
+  }
+
+  // Botón para volver de mantenimiento a diagnóstico
+  const btnVolverDiagnostico = document.getElementById('btnVolverDiagnostico');
+  if (btnVolverDiagnostico) {
+    btnVolverDiagnostico.addEventListener('click', function() {
+      // Oculta mantenimiento
+      const mantSection = document.getElementById('mantenimientoSection');
+      if (mantSection) mantSection.classList.add('collapse');
+      // Muestra diagnóstico
+      const diagSection = document.getElementById('diagnosticoSection');
+      if (diagSection) diagSection.classList.remove('collapse');
+    });
+  }
+});
 let solicitudActual = null;
 let modoEdicion = false;
-let diagnosticoEntries = [];
-let mantenimientoEntries = [];
 let etapaActual = 'informacion';
-
-function validarNumerico(valor) {
-  return /^\d+$/.test(valor);
-}
-
-function validarCorreo(correo) {
-  return /@unal\.edu\.co$/.test(correo);
-}
 
 document.addEventListener('DOMContentLoaded', function () {
   const numeroCaso = localStorage.getItem('detalleActual');
@@ -18,117 +240,37 @@ document.addEventListener('DOMContentLoaded', function () {
   solicitudActual = solicitudes.find(s => s.numeroCaso === numeroCaso);
 
   if (solicitudActual) {
-    if (solicitudActual.etapaActual) {
-      etapaActual = solicitudActual.etapaActual;
-    }
-    
-    if (solicitudActual.diagnosticoEntries) {
-      diagnosticoEntries = solicitudActual.diagnosticoEntries;
-    }
-    
-    if (solicitudActual.mantenimientoEntries) {
-      mantenimientoEntries = solicitudActual.mantenimientoEntries;
-    }
-    
-    
     inicializarUI();
     configurarEventos();
+    mostrarDiagnosticos();
+    mostrarMantenimientos();
   }
 });
-
-function inicializarUI() {
+function actualizarEtapa(etapa) {
+  solicitudActual.estado = etapa;
+  // Actualizar en localStorage
+  let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
+  const index = enProceso.findIndex(s => s.numeroCaso === solicitudActual.numeroCaso);
+  if (index !== -1) {
+    enProceso[index] = solicitudActual;
+    localStorage.setItem('enProceso', JSON.stringify(enProceso));
+  }
+  mostrarResumen(solicitudActual);
+}
+ function inicializarUI() {
   if (!solicitudActual.estado) {
     solicitudActual.estado = 'Asignada';
   }
   mostrarResumen(solicitudActual);
   mostrarInfoSolicitud(solicitudActual);
-  mostrarDiagnosticoEntries();
-  mostrarMantenimientoEntries();
-  mostrarEtapa(etapaActual);
-  verificarEstadoContinuar();
 }
 
 function configurarEventos() {
-  document.getElementById('btnContinuarDiagnostico').addEventListener('click', () => mostrarEtapa('diagnostico'));
-  document.getElementById('btnVolverInformacion').addEventListener('click', () => mostrarEtapa('informacion'));
-  document.getElementById('btnContinuarMantenimiento').addEventListener('click', () => mostrarEtapa('mantenimiento'));
-  document.getElementById('btnVolverDiagnostico').addEventListener('click', () => mostrarEtapa('diagnostico'));
-  document.getElementById('btnContinuarInforme').addEventListener('click', () => mostrarEtapa('informe'));
-  document.getElementById('btnVolverMantenimiento').addEventListener('click', () => mostrarEtapa('mantenimiento'));
-  document.getElementById('btnFinalizarProceso').addEventListener('click', finalizarProceso);
-  document.getElementById('btnInformeRevicion').addEventListener('click',() => mostrarEtapa('revision'));
-  
+  document.getElementById('btnContinuarDiagnostico').addEventListener('click', () => actualizarEtapa('diagnostico'));
   document.getElementById('btnEditar').addEventListener('click', habilitarEdicion);
-  document.getElementById('btnSaltarMantenimiento').addEventListener('click', saltarAMantenimiento);
-  
-  document.getElementById('formDiagnostico').addEventListener('submit', guardarDiagnostico);
-  document.getElementById('formMantenimiento').addEventListener('submit', guardarMantenimiento);
-  
-  document.getElementById('imagenesDiagnostico').addEventListener('change', function(e) {
-    previewImages(e.target.files, 'previewDiagnostico');
-  });
-  
-  document.getElementById('imagenesMantenimiento').addEventListener('change', function(e) {
-    previewImages(e.target.files, 'previewMantenimiento');
-  });
-  
-  document.getElementById('btnEtapaInformacion').addEventListener('click', () => !this.disabled && mostrarEtapa('informacion'));
-  document.getElementById('btnEtapaDiagnostico').addEventListener('click', () => !this.disabled && mostrarEtapa('diagnostico'));
-  document.getElementById('btnEtapaMantenimiento').addEventListener('click', () => !this.disabled && mostrarEtapa('mantenimiento'));
-  document.getElementById('btnEtapaInforme').addEventListener('click', () => !this.disabled && mostrarEtapa('informe'));
-  document.getElementById('btnEtapaRevision').addEventListener('click', () => !this.disabled && mostrarEtapa('revision'));
+  document.getElementById('btnVolverInformacion').addEventListener('click', volverAInformacion);
+  document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicion);
 
-}
-
-function actualizarEstadoBotones() {
-  const etapas = ['informacion', 'diagnostico', 'mantenimiento', 'informe', 'revision'];
-  const indexEtapaActual = etapas.indexOf(etapaActual);
-
-  // Habilitar solo la etapa actual y las anteriores
-  etapas.forEach((etapa, index) => {
-    const btnEtapa = document.getElementById(`btnEtapa${etapa.charAt(0).toUpperCase() + etapa.slice(1)}`);
-    if (btnEtapa) {
-      btnEtapa.disabled = index > indexEtapaActual;
-    }
-  });
-
-  // Habilitar botón "Continuar" solo si se cumplen los requisitos
-  const btnContinuar = document.getElementById(`btnContinuar${etapaActual.charAt(0).toUpperCase() + etapaActual.slice(1)}`);
-  if (btnContinuar) {
-    switch (etapaActual) {
-      case 'informacion':
-        btnContinuar.disabled = !(
-          solicitudActual.nombreLaboratorio && 
-          solicitudActual.facultad && 
-          solicitudActual.salon
-        );
-        break;
-      case 'diagnostico':
-        btnContinuar.disabled = diagnosticoEntries.length === 0;
-        break;
-      case 'mantenimiento':
-        btnContinuar.disabled = mantenimientoEntries.length === 0 && 
-                              solicitudActual.mantenimientoPosible !== false;
-        break;
-      case 'informe':
-        btnContinuar.disabled = false; // Siempre habilitado para revisión
-        break;
-    }
-  }
-}
-
-function verificarEstadoContinuar() {
-  const camposRequeridos = [
-    solicitudActual.nombreLaboratorio,
-    solicitudActual.bloque,
-    solicitudActual.facultad,
-    solicitudActual.salon
-  ];
-
-  const todosCompletos = camposRequeridos.every(campo => campo && campo.trim() !== '');
-  document.getElementById('btnContinuarDiagnostico').disabled = !todosCompletos;
-  
-  actualizarIndicadoresEtapas();
 }
 
 function mostrarResumen(solicitud) {
@@ -155,6 +297,39 @@ function mostrarResumen(solicitud) {
   
   const tiempoCell = fila.insertCell(4);
   tiempoCell.innerHTML = `<div>${diffDays} días</div><div>${diffHours} horas</div>`;
+
+  // Desbloquear botones de etapas según el estado
+  desbloquearEtapas(solicitud.estado);
+}
+
+function desbloquearEtapas(estado) {
+  // Botones de etapas
+  const btnEtapaInformacion = document.getElementById('btnEtapaInformacion');
+  const btnEtapaDiagnostico = document.getElementById('btnEtapaDiagnostico');
+  const btnEtapaMantenimiento = document.getElementById('btnEtapaMantenimiento');
+  const btnEtapaInforme = document.getElementById('btnEtapaInforme');
+  const btnEtapaRevision = document.getElementById('btnEtapaRevision');
+
+  // Información de la Solicitud siempre habilitado
+  if (btnEtapaInformacion) btnEtapaInformacion.disabled = false;
+  if (btnEtapaDiagnostico) btnEtapaDiagnostico.disabled = true;
+  if (btnEtapaMantenimiento) btnEtapaMantenimiento.disabled = true;
+  if (btnEtapaInforme) btnEtapaInforme.disabled = true;
+  if (btnEtapaRevision) btnEtapaRevision.disabled = true;
+
+  // Activar según el estado actual
+  if (estado === 'En diagnostico' || estado === 'En mantenimiento' || estado === 'En informe' || estado === 'En aprobacion' || estado === 'Finalizado') {
+    if (btnEtapaDiagnostico) btnEtapaDiagnostico.disabled = false;
+  }
+  if (estado === 'En mantenimiento' || estado === 'En informe' || estado === 'En aprobacion' || estado === 'Finalizado') {
+    if (btnEtapaMantenimiento) btnEtapaMantenimiento.disabled = false;
+  }
+  if (estado === 'En informe' || estado === 'En aprobacion' || estado === 'Finalizado') {
+    if (btnEtapaInforme) btnEtapaInforme.disabled = false;
+  }
+  if (estado === 'En aprobacion' || estado === 'Finalizado') {
+    if (btnEtapaRevision) btnEtapaRevision.disabled = false;
+  }
 }
 
 function obtenerClaseEstado(estado) {
@@ -224,11 +399,7 @@ function habilitarEdicion() {
       <div class="row mt-2">
         <div class="col-md-6">
           <label class="form-label">Facultad:</label>
-          <select class="form-select" id="editFacultad" required>
-            <option value="Ciencias" ${solicitudActual.facultad === 'Ciencias' ? 'selected' : ''}>Ciencias</option>
-            <option value="Ciencias Agrarias" ${solicitudActual.facultad === 'Ciencias Agrarias' ? 'selected' : ''}>Ciencias Agrarias</option>
-            <option value="Minas" ${solicitudActual.facultad === 'Minas' ? 'selected' : ''}>Minas</option>
-          </select>
+          <input type="text" class="form-control" value="${solicitudActual.facultad}" id="editFacultad" required>
         </div>
         <div class="col-md-6">
           <label class="form-label">Salón:</label>
@@ -262,11 +433,7 @@ function habilitarEdicion() {
         </div>
         <div class="col-md-6">
           <label class="form-label">Tipo de Equipo:</label>
-          <select class="form-select" id="editTipoEquipo">
-            <option value="medicion_control" ${solicitudActual.tipoEquipo === 'medicion_control' ? 'selected' : ''}>Equipos de Medición y Control</option>
-            <!-- Resto de opciones... -->
-            -{}
-          </select>
+          <input type="text" class="form-control" value="${solicitudActual.tipoEquipo}" id="editTipoEquipo">
         </div>
       </div>
       <div class="row mt-3">
@@ -282,60 +449,16 @@ function habilitarEdicion() {
     </form>
   `;
   
-  document.getElementById('btnCancelarEdicion').addEventListener('click', cancelarEdicion);
+  document.getElementById('btnCancelarEdicion').addEventListener('click', volverAInformacion);
   document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicion);
-  
-  // Validaciones en tiempo real
-  document.getElementById('editNumEquipo').addEventListener('input', function(e) {
-    this.value = this.value.replace(/[^0-9]/g, '');
-  });
-  
-  document.getElementById('editPlaca').addEventListener('input', function(e) {
-    this.value = this.value.replace(/[^0-9]/g, '');
-  });
-  
-  document.getElementById('editContacto').addEventListener('input', function(e) {
-    this.value = this.value.replace(/[^0-9]/g, '');
-  });
-  
-  document.getElementById('editCorreo').addEventListener('change', function(e) {
-    if (!this.value.endsWith('@unal.edu.co')) {
-      alert('Por favor ingrese un correo institucional (@unal.edu.co)');
-      this.focus();
-    }
-  });
+}
+
+function volverAInformacion() {
+  modoEdicion = false;
+  mostrarInfoSolicitud(solicitudActual);
 }
 
 function guardarEdicion() {
-  const correo = document.getElementById('editCorreo').value;
-  const numEquipo = document.getElementById('editNumEquipo').value;
-  const placaEquipo = document.getElementById('editPlaca').value;
-  const contacto = document.getElementById('editContacto').value;
-  
-  if (!validarCorreo(correo)) {
-    alert('El correo debe ser institucional (@unal.edu.co)');
-    return;
-  }
-  
-  if (!validarNumerico(numEquipo)) {
-    alert('Número de equipo debe ser numérico');
-    return;
-  }
-  
-  if (!validarNumerico(placaEquipo)) {
-    alert('Placa del equipo debe ser numérica');
-    return;
-  }
-  
-  if (!validarNumerico(contacto)) {
-    alert('Número de contacto debe ser numérico');
-    return;
-  }
-  
-  if (!confirm('¿Estás seguro de guardar los cambios?')) {
-    return;
-  }
-
   solicitudActual.nombreLaboratorio = document.getElementById('editLaboratorio').value;
   solicitudActual.bloque = document.getElementById('editBloque').value;
   solicitudActual.facultad = document.getElementById('editFacultad').value;
@@ -348,557 +471,20 @@ function guardarEdicion() {
   solicitudActual.tipoEquipo = document.getElementById('editTipoEquipo').value;
   solicitudActual.descripcionProblema = document.getElementById('editDescripcion').value;
 
-
-  actualizarEnStorage();
-  
-  modoEdicion = false;
-  mostrarInfoSolicitud(solicitudActual);
-  mostrarResumen(solicitudActual);
-  verificarEstadoContinuar();
-}
-
-function cancelarEdicion() {
-  modoEdicion = false;
-  mostrarInfoSolicitud(solicitudActual);
-}
-
-function previewImages(files, previewId) {
-  const preview = document.getElementById(previewId);
-  preview.innerHTML = '';
-  
-  for (const file of files) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      img.classList.add('image-preview');
-      preview.appendChild(img);
-    };
-    reader.readAsDataURL(file);
-  }
-}
-
-function finalizarRevision() {
-  if (!confirm('¿Estás seguro de finalizar la revisión? Esta acción moverá la solicitud a finalizadas.')) {
-    return;
-  }
-  
-  // Guardar datos adicionales
-  solicitudActual.marcaEquipo = document.getElementById('marcaEquipo').value;
-  solicitudActual.modeloEquipo = document.getElementById('modeloEquipo').value;
-  solicitudActual.serieEquipo = document.getElementById('serieEquipo').value;
-  solicitudActual.personaAtendio = document.getElementById('personaAtendio').value;
-  solicitudActual.cargoPersona = document.getElementById('cargoPersona').value;
-  solicitudActual.contactoPersona = document.getElementById('contactoPersona').value;
-  solicitudActual.retroalimentacion = document.getElementById('retroalimentacion').value;
-  solicitudActual.estado = 'Finalizado';
-  solicitudActual.fechaFinalizacion = new Date().toLocaleDateString();
-  
-  // Mover a finalizadas
-  let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
-  enProceso = enProceso.filter(s => s.numeroCaso !== solicitudActual.numeroCaso);
-  localStorage.setItem('enProceso', JSON.stringify(enProceso));
-  
-  let finalizadas = JSON.parse(localStorage.getItem('finalizadas')) || [];
-  finalizadas.push(solicitudActual);
-  localStorage.setItem('finalizadas', JSON.stringify(finalizadas));
-  
-  alert('Revisión finalizada. La solicitud ha sido movida a "Solicitudes Finalizadas".');
-  window.location.href = 'solicitudes_finalizadas.html';
-}
-
-function generarResumenInforme() {
-  const revisionSection = document.getElementById('resumenInforme');
-  
-  let html = `    
-    <div class="card mb-4">
-      <div class="card-header bg-primary text-white">
-        <h5>Proceso Gestión de Laboratorios</h5>
-        <h6>Reporte Diagnóstico y Mantenimiento Interno</h6>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-6">
-            <table class="table table-bordered">
-              <tr>
-                <th>Fecha aprobación de la solicitud</th>
-                <td>${new Date().toLocaleDateString()}</td>
-              </tr>
-              <tr>
-                <th>No. Solicitud</th>
-                <td>${solicitudActual.numeroSolicitud}</td>
-              </tr>
-              <tr>
-                <th>Solicitante</th>
-                <td><input type="text" class="form-control" id="solicitante" value=""></td>
-              </tr>
-              <tr>
-                <th>Laboratorio</th>
-                <td>${solicitudActual.nombreLaboratorio}</td>
-              </tr>
-              <tr>
-                <th>Facultad</th>
-                <td>${solicitudActual.facultad}</td>
-              </tr>
-              <tr>
-                <th>Ubicación del equipo</th>
-                <td>Bloque ${solicitudActual.bloque}, Salón ${solicitudActual.salon}</td>
-              </tr>
-              <tr>
-                <th>Código de laboratorio</th>
-                <td><input type="text" class="form-control" id="codigoLaboratorio" value=""></td>
-              </tr>
-              <tr>
-                <th>Coordinador</th>
-                <td><input type="text" class="form-control" id="cordinador" value=""></td>
-              </tr>
-            </table>
-          </div>
-          
-          <div class="col-md-6">
-            
-            <table class="table table-bordered">
-              <tr>
-                <th>Equipo</th>
-                <td>${solicitudActual.tipoEquipo}</td>
-              </tr>
-              <tr>
-                <th>Identificación del equipo (Placa UNAL)</th>
-                <td>${solicitudActual.placaEquipo}</td>
-              </tr>
-              <tr>
-                <th>Marca</th>
-                <td><input type="text" class="form-control" id="marcaEquipo" value=""></td>
-              </tr>
-              <tr>
-                <th>Modelo</th>
-                <td><input type="text" class="form-control" id="modeloEquipo" value=""></td>
-              </tr>
-              <tr>
-                <th>Número de serie</th>
-                <td><input type="text" class="form-control" id="serieEquipo" value=""></td>
-              </tr>
-              <tr>
-                <th>Fecha de diagnóstico</th>
-                <td>${diagnosticoEntries.length > 0 ? diagnosticoEntries[0].fecha : ''}</td>
-              </tr>
-              <tr>
-                <th>Responsable de diagnóstico</th>
-                <td>${solicitudActual.tecnicoAsignado}</td>
-              </tr>
-              <tr>
-                <th>Persona que atiende la visita</th>
-                <td><input type="text" class="form-control" id="personaAtendio" value=""></td>
-              </tr>
-              <tr>
-                <th>Cargo/rol</th>
-                <td><input type="text" class="form-control" id="cargoPersona" value=""></td>
-              </tr>
-              <tr>
-                <th>Contacto</th>
-                <td><input type="text" class="form-control" id="contactoPersona" value=""></td>
-              </tr>
-            </table>
-          </div>
-        </div>
-        
-        <h5 class="mt-4">Diagnóstico</h5>
-        ${diagnosticoEntries.map(entry => `
-          <div class="mb-3">
-            <p><strong>${entry.fecha} - ${entry.titulo}:</strong></p>
-            <p>${entry.comentario}</p>
-            ${entry.imagenes.length > 0 ? `
-              <div class="d-flex flex-wrap">
-                ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
-              </div>
-            ` : ''}
-          </div>
-        `).join('')}
-        
-        <h5 class="mt-4">Mantenimiento</h5>
-        ${mantenimientoEntries.length > 0 ? `
-          <div class="mb-4">
-            ${mantenimientoEntries.map(entry => `
-              <div class="mb-3">
-                <p><strong>${entry.fecha} - ${entry.titulo}:</strong></p>
-                <p>${entry.actividades}</p>
-                <p><strong>Partes reemplazadas:</strong> ${entry.partes}</p>
-                ${entry.imagenes.length > 0 ? `
-                  <div class="d-flex flex-wrap">
-                    ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
-                  </div>
-                ` : ''}
-              </div>
-            `).join('')}
-          </div>
-        ` : '<p>No se realizó mantenimiento</p>'}
-      </div>
-    </div>
-   
-  `;
-  revisionSection.innerHTML = html
-}
-
-function volverADiagnostico() {
-  if (!confirm('¿Estás seguro de devolver esta solicitud a diagnóstico? Todos los avances se mantendrán.')) {
-    return;
-  }
-  
-  solicitudActual.estado = 'En diagnostico';
-  solicitudActual.etapaActual = 'diagnostico';
-  actualizarEnStorage();
-  
-  // Mostrar etapa de diagnóstico
-  mostrarEtapa('diagnostico');
-}
-
-function guardarDiagnostico(e) {
-  e.preventDefault();
-  
-  const titulo = document.getElementById('tituloDiagnostico').value;
-  const comentario = document.getElementById('comentarioDiagnostico').value;
-  
-  // Obtener imágenes (simulado, en realidad deberías subirlas a un servidor)
-  const imagenes = [];
-  const files = document.getElementById('imagenesDiagnostico').files;
-  for (let i = 0; i < files.length; i++) {
-    imagenes.push({
-      name: files[i].name,
-      // En una implementación real, aquí subirías el archivo y guardarías la URL
-      url: URL.createObjectURL(files[i])
-    });
-  }
-  
-  // Crear entrada
-  const entrada = {
-    fecha: new Date().toLocaleDateString(),
-    titulo,
-    comentario,
-    imagenes
-  };
-  
-  diagnosticoEntries.push(entrada);
-  mostrarDiagnosticoEntries();
-  
-  // Limpiar formulario
-  document.getElementById('formDiagnostico').reset();
-  document.getElementById('previewDiagnostico').innerHTML = '';
-  
-  // Actualizar en solicitud actual y almacenamiento
-  solicitudActual.diagnosticoEntries = diagnosticoEntries;
-  actualizarEnStorage();
-  actualizarEstadoBotones();
-}
-// ... (resto de funciones existentes: cancelarEdicion, previewImages, guardarDiagnostico, etc.) ...
-
-function mostrarEtapa(etapa) {
-  etapaActual = etapa;
-  
-  switch(etapa) {
-    case 'diagnostico':
-      solicitudActual.estado = 'En diagnostico';
-      break;
-    case 'mantenimiento':
-      solicitudActual.estado = 'En mantenimiento';
-      break;
-    case 'informe':
-      solicitudActual.estado = 'En informe';
-      break;
-    case 'revision':
-      solicitudActual.estado = 'En aprobacion';
-      generarResumenRevision(); 
-
-      break;
-  }
-  
-  document.getElementById('informacionSection').classList.add('collapse');
-  document.getElementById('diagnosticoSection').classList.add('collapse');
-  document.getElementById('mantenimientoSection').classList.add('collapse');
-  document.getElementById('informeSection').classList.add('collapse');
-  
-  document.getElementById(`${etapa}Section`).classList.remove('collapse');
-  
-  if (etapa === 'informe') {
-    generarResumenInforme();
-  }
-  
-  if (etapa === 'revision') {
-    generarInformeFinal();
-  }
-  solicitudActual.etapaActual = etapaActual;
-  actualizarEnStorage();
-  mostrarResumen(solicitudActual);
-  actualizarIndicadoresEtapas();
-  verificarEstadoContinuar();
-}
-
-function actualizarIndicadoresEtapas() {
-  const etapas = ['informacion', 'diagnostico', 'mantenimiento', 'informe', 'revision'];
-  const indexEtapaActual = etapas.indexOf(etapaActual);
-  
-  etapas.forEach((etapa, index) => {
-    const btn = document.getElementById(`btnEtapa${etapa.charAt(0).toUpperCase() + etapa.slice(1)}`);
-    if (btn) {
-      btn.classList.remove('etapa-activa', 'etapa-completa');
-      btn.disabled = index > indexEtapaActual;
-      
-      if (etapa === etapaActual) {
-        btn.classList.add('etapa-activa');
-      }
-      
-      if (index < indexEtapaActual) {
-        btn.classList.add('etapa-completa');
-      }
-    }
-  });
-}
-
-// ... (resto de funciones del archivo) ...
-function mostrarDiagnosticoEntries() {
-  const container = document.getElementById('diagnosticoEntries');
-  container.innerHTML = '';
-  
-  diagnosticoEntries.forEach(entry => {
-    const entryEl = document.createElement('div');
-    entryEl.classList.add('entry-item');
-    entryEl.innerHTML = `
-      <h5>${entry.titulo} <small>(${entry.fecha})</small></h5>
-      <p>${entry.comentario}</p>
-      <div class="d-flex flex-wrap">
-        ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
-      </div>
-    `;
-    container.appendChild(entryEl);
-  });
-}
-
-function guardarMantenimiento(e) {
-  e.preventDefault();
-  
-  const titulo = document.getElementById('tituloMantenimiento').value;
-  const actividades = document.getElementById('actividadesMantenimiento').value;
-  const partes = document.getElementById('partesMantenimiento').value;
-  
-  const imagenes = [];
-  const files = document.getElementById('imagenesMantenimiento').files;
-  for (let i = 0; i < files.length; i++) {
-    imagenes.push({
-      name: files[i].name,
-      url: URL.createObjectURL(files[i])
-    });
-  }
-  
-  const entrada = {
-    fecha: new Date().toLocaleDateString(),
-    titulo,
-    actividades,
-    partes: partes || 'N/A',
-    imagenes
-  };
-  
-  mantenimientoEntries.push(entrada);
-  mostrarMantenimientoEntries();
-  
-  document.getElementById('formMantenimiento').reset();
-  document.getElementById('previewMantenimiento').innerHTML = '';
-  
-  solicitudActual.mantenimientoEntries = mantenimientoEntries;
-  actualizarEnStorage();
-  actualizarEstadoBotones();
-}
-
-
-function mostrarMantenimientoEntries() {
-  const container = document.getElementById('mantenimientoEntries');
-  container.innerHTML = '';
-  
-  mantenimientoEntries.forEach(entry => {
-    const entryEl = document.createElement('div');
-    entryEl.classList.add('entry-item');
-    entryEl.innerHTML = `
-      <h5>${entry.titulo} <small>(${entry.fecha})</small></h5>
-      <p><strong>Actividades:</strong> ${entry.actividades}</p>
-      <p><strong>Partes reemplazadas:</strong> ${entry.partes}</p>
-      <div class="d-flex flex-wrap">
-        ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
-      </div>
-    `;
-    container.appendChild(entryEl);
-  });
-}
-
-function saltarAMantenimiento() {
-  // Marcar que no se realizó mantenimiento
-  solicitudActual.mantenimientoPosible = false;
-  actualizarEnStorage();
-  
-  // Saltar a informe
-  mostrarEtapa('informe');
-}
-
-function actualizarEnStorage() {
-  // Actualizar propiedades adicionales
-  solicitudActual.diagnosticoEntries = diagnosticoEntries;
-  solicitudActual.mantenimientoEntries = mantenimientoEntries;
-  
-  // Actualizar localStorage
+  // Actualizar en localStorage
   let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
   const index = enProceso.findIndex(s => s.numeroCaso === solicitudActual.numeroCaso);
   if (index !== -1) {
     enProceso[index] = solicitudActual;
     localStorage.setItem('enProceso', JSON.stringify(enProceso));
   }
+
+  // Volver a la vista de solo lectura
+  modoEdicion = false;
+  mostrarInfoSolicitud(solicitudActual);
 }
 
-function generarInformeFinal() {
-  const resumen = document.getElementById('mostrarInformeFinal');
-  
-  let html = `
-    <div class="card mb-4">
-      <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Proceso Gestión de Laboratorios</h5>
-        <h6 class="mb-0">Reporte Diagnóstico y Mantenimiento Interno</h6>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-6">
-            <table class="table table-bordered">
-              <tr>
-                <th>Fecha aprobación de la solicitud</th>
-                <td>${new Date().toLocaleDateString()}</td>
-              </tr>
-              <tr>
-                <th>No. Solicitud</th>
-                <td>${solicitudActual.numeroSolicitud}</td>
-              </tr>
-              <tr>
-                <th>Solicitante</th>
-                <td>[Nombre del solicitante]</td>
-              </tr>
-              <tr>
-                <th>Laboratorio</th>
-                <td>${solicitudActual.nombreLaboratorio}</td>
-              </tr>
-              <tr>
-                <th>Facultad</th>
-                <td>${solicitudActual.facultad}</td>
-              </tr>
-              <tr>
-                <th>Ubicación del equipo</th>
-                <td>Bloque ${solicitudActual.bloque}, Salón ${solicitudActual.salon}</td>
-              </tr>
-              <tr>
-                <th>Código de laboratorio</th>
-                <td>[Código]</td>
-              </tr>
-              <tr>
-                <th>Coordinador</th>
-                <td>[Nombre del coordinador]</td>
-              </tr>
-            </table>
-          </div>
-          
-          <div class="col-md-6">
-            <table class="table table-bordered">
-              <tr>
-                <th>Equipo</th>
-                <td>${solicitudActual.tipoEquipo}</td>
-              </tr>
-              <tr>
-                <th>Identificación del equipo (Placa UNAL)</th>
-                <td>${solicitudActual.placaEquipo}</td>
-              </tr>
-              <tr>
-                <th>Marca</th>
-                <td>[Marca]</td>
-              </tr>
-              <tr>
-                <th>Modelo</th>
-                <td>[Modelo]</td>
-              </tr>
-              <tr>
-                <th>Número de serie</th>
-                <td>[Número de serie]</td>
-              </tr>
-              <tr>
-                <th>Fecha de diagnóstico</th>
-                <td>${diagnosticoEntries.length > 0 ? diagnosticoEntries[0].fecha : ''}</td>
-              </tr>
-              <tr>
-                <th>Responsable de diagnóstico</th>
-                <td>${solicitudActual.tecnicoAsignado}</td>
-              </tr>
-              <tr>
-                <th>Persona que atiende la visita</th>
-                <td>[Nombre]</td>
-              </tr>
-              <tr>
-                <th>Cargo/rol</th>
-                <td>[Cargo]</td>
-              </tr>
-              <tr>
-                <th>Contacto</th>
-                <td>[Contacto]</td>
-              </tr>
-            </table>
-          </div>
-        </div>
-        
-        <h5 class="mt-4">Diagnóstico</h5>
-        <div class="mb-4">
-          ${diagnosticoEntries.map(entry => `
-            <div class="mb-3">
-              <p><strong>${entry.fecha} - ${entry.titulo}:</strong></p>
-              <p>${entry.comentario}</p>
-              ${entry.imagenes.length > 0 ? `
-                <div class="d-flex flex-wrap">
-                  ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
-                </div>
-              ` : ''}
-            </div>
-          `).join('')}
-        </div>
-        
-        <h5 class="mt-4">Mantenimiento</h5>
-        ${mantenimientoEntries.length > 0 ? `
-          <div class="mb-4">
-            ${mantenimientoEntries.map(entry => `
-              <div class="mb-3">
-                <p><strong>${entry.fecha} - ${entry.titulo}:</strong></p>
-                <p>${entry.actividades}</p>
-                <p><strong>Partes reemplazadas:</strong> ${entry.partes}</p>
-                ${entry.imagenes.length > 0 ? `
-                  <div class="d-flex flex-wrap">
-                    ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
-                  </div>
-                ` : ''}
-              </div>
-            `).join('')}
-          </div>
-        ` : '<p>No se realizó mantenimiento</p>'}
-      </div>
-    </div>
-  `;
-  
-  resumen.innerHTML = html;
-}
+function cambiodePunto(){
 
-function finalizarProceso() {
-  if (!confirm('¿Estás seguro de finalizar el proceso? Esta acción no se puede deshacer.')) {
-    return;
-  }
-  
-  solicitudActual.estado = 'Finalizado';
-  solicitudActual.fechaFinalizacion = new Date().toLocaleDateString();
-  
-  let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
-  enProceso = enProceso.filter(s => s.numeroCaso !== solicitudActual.numeroCaso);
-  localStorage.setItem('enProceso', JSON.stringify(enProceso));
-  
-  let finalizadas = JSON.parse(localStorage.getItem('finalizadas')) || [];
-  finalizadas.push(solicitudActual);
-  localStorage.setItem('finalizadas', JSON.stringify(finalizadas));
-  
-  alert('Proceso finalizado. La solicitud ha sido movida a "Solicitudes Finalizadas".');
-  window.location.href = 'solicitudes_proceso.html';
+
 }
