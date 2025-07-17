@@ -89,6 +89,7 @@ function guardarMantenimiento(e) {
   document.getElementById('formMantenimiento').reset();
   mostrarMantenimientos();
 }
+
 // Mostrar/ocultar secciones al avanzar de etapa
 document.addEventListener('DOMContentLoaded', function() {
   // Unificar listeners de botones de volver para evitar duplicados y asegurar compatibilidad
@@ -156,6 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+
   // Botón para volver de diagnóstico a información
   const btnVolverInformacion = document.getElementById('btnVolverInformacion');
   if (btnVolverInformacion) {
@@ -185,6 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
       mostrarMantenimientos();
     });
   }
+  
   // Botón para pasar de mantenimiento a informe
   const btnContinuarInforme = document.getElementById('btnContinuarInforme');
   if (btnContinuarInforme) {
@@ -228,6 +231,64 @@ let solicitudActual = null;
 let modoEdicion = false;
 let etapaActual = 'informacion';
 
+document.addEventListener('DOMContentLoaded', function () {
+  // Configurar el botón de "No es posible mantenimiento"
+  const btnSaltarMantenimiento = document.getElementById('btnSaltarMantenimiento');
+  if (btnSaltarMantenimiento) {
+    btnSaltarMantenimiento.addEventListener('click', function() {
+      // Cambiar la etapa a "En mantenimiento"
+      actualizarEtapa('En mantenimiento');
+
+      // Ocultar la sección de diagnóstico
+      const diagSection = document.getElementById('diagnosticoSection');
+      if (diagSection) diagSection.classList.add('collapse');
+
+      // Mostrar la sección de mantenimiento
+      const mantSection = document.getElementById('mantenimientoSection');
+      if (mantSection) mantSection.classList.remove('collapse');
+
+      // Actualizar el estado en la solicitud
+      const numeroCaso = localStorage.getItem('detalleActual');
+      const solicitudes = JSON.parse(localStorage.getItem('enProceso')) || [];
+      const solicitudActual = solicitudes.find(s => s.numeroCaso === numeroCaso);
+
+      if (solicitudActual) {
+        solicitudActual.estado = 'En mantenimiento'; // Actualizar estado
+        // Guardar la solicitud con el nuevo estado en localStorage
+        const index = solicitudes.findIndex(s => s.numeroCaso === solicitudActual.numeroCaso);
+        if (index !== -1) {
+          solicitudes[index] = solicitudActual;
+          localStorage.setItem('enProceso', JSON.stringify(solicitudes));
+        }
+      }
+      
+      alert('La solicitud ha sido movida a la etapa de mantenimiento.');
+    });
+  }
+});
+
+// Función para actualizar el estado de la solicitud
+function actualizarEtapa(etapa) {
+  // Obtener la solicitud actual desde localStorage
+  const numeroCaso = localStorage.getItem('detalleActual');
+  const solicitudes = JSON.parse(localStorage.getItem('enProceso')) || [];
+  const solicitudActual = solicitudes.find(s => s.numeroCaso === numeroCaso);
+
+  if (solicitudActual) {
+    solicitudActual.estado = etapa; // Cambiar el estado de la solicitud
+
+    // Guardar la solicitud actualizada en localStorage
+    const index = solicitudes.findIndex(s => s.numeroCaso === solicitudActual.numeroCaso);
+    if (index !== -1) {
+      solicitudes[index] = solicitudActual;
+      localStorage.setItem('enProceso', JSON.stringify(solicitudes));
+    }
+  }
+}
+
+
+
+
 function guardarEdicion() {
   solicitudActual.nombreLaboratorio = document.getElementById('editLaboratorio').value;
   solicitudActual.bloque = document.getElementById('editBloque').value;
@@ -255,12 +316,21 @@ function guardarEdicion() {
 }
 
 function configurarEventos() {
-  document.getElementById('btnContinuarDiagnostico').addEventListener('click', () => actualizarEtapa('diagnostico'));
-  document.getElementById('btnEditar').addEventListener('click', habilitarEdicion);
-  // document.getElementById('btnVolverInformacion').addEventListener('click', volverAInformacion);
-  document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicion);
-
-
+  const btnContinuarDiagnostico = document.getElementById('btnContinuarDiagnostico');
+  const btnEditar = document.getElementById('btnEditar');
+  const btnGuardarEdicion = document.getElementById('btnGuardarEdicion');
+  
+  if (btnContinuarDiagnostico) {
+    btnContinuarDiagnostico.addEventListener('click', () => actualizarEtapa('diagnostico'));
+  }
+  
+  if (btnEditar) {
+    btnEditar.addEventListener('click', habilitarEdicion);
+  }
+  
+  if (btnGuardarEdicion) {
+    btnGuardarEdicion.addEventListener('click', guardarEdicion);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -311,18 +381,26 @@ function mostrarResumen(solicitud) {
   
   fila.insertCell(3).textContent = solicitud.fechaInicio;
 
-  const fechaInicio = new Date(solicitud.fechaInicio);
-  const hoy = new Date();
-  const diffMs = hoy - fechaInicio;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   
+  const fechaCreacion = new Date(solicitud.fechaCreacion);
+  const hoy = new Date();
+
+ 
+  const diffMs = hoy - fechaCreacion;
+
+  
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)); 
+  const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); 
+
+  // Mostrar la diferencia en días y horas
   const tiempoCell = fila.insertCell(4);
   tiempoCell.innerHTML = `<div>${diffDays} días</div><div>${diffHours} horas</div>`;
 
-  // Desbloquear botones de etapas según el estado
   desbloquearEtapas(solicitud.estado);
 }
+
+
+
 
 function desbloquearEtapas(estado) {
   // Botones de etapas
@@ -403,93 +481,110 @@ function habilitarEdicion() {
   modoEdicion = true;
   const contenedor = document.getElementById('infoSolicitud');
   contenedor.innerHTML = `
-    <form id="formEdicion">
-      <div class="row">
-        <div class="col-md-6"><strong>Número de Solicitud:</strong> ${solicitudActual.numeroSolicitud}</div>
-        <div class="col-md-6"><strong>Fecha de Solicitud:</strong> ${solicitudActual.fechaSolicitud}</div>
-      </div>
-      <div class="row mt-2">
-        <div class="col-md-6">
-          <label class="form-label">Laboratorio:</label>
-          <input type="text" class="form-control" value="${solicitudActual.nombreLaboratorio}" id="editLaboratorio" required>
+      <form id="formEdicion">
+        <div class="row">
+          <div class="col-md-6">
+            <label class="form-label">Laboratorio:</label>
+            <input type="text" class="form-control" value="${solicitudActual.nombreLaboratorio}" id="editLaboratorio" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Bloque:</label>
+            <input type="text" class="form-control" value="${solicitudActual.bloque}" id="editBloque" required>
+          </div>
         </div>
-        <div class="col-md-6">
-          <label class="form-label">Bloque:</label>
-          <input type="text" class="form-control" value="${solicitudActual.bloque}" id="editBloque" required>
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label class="form-label">Facultad<span class="text-danger">*</span>:</label>
+            <select class="form-select" id="editFacultad" value="${solicitudActual.facultad}" required>
+              <option value="">Seleccione</option>
+              <option value="Ciencias">Ciencias</option>
+              <option value="Ciencias Agrarias">Ciencias Agrarias</option>
+              <option value="Minas">Minas</option>
+            </select>
+            </div>
+          <div class="col-md-6">
+            <label class="form-label">Número del Salón <span class="text-danger">*</span>:</label>
+            <input type="text" class="form-control" id="editSalon" value="${solicitudActual.salon}"required>
+            </div>
         </div>
-      </div>
-      <div class="row mt-2">
-        <div class="col-md-6">
-          <label class="form-label">Facultad:</label>
-          <input type="text" class="form-control" value="${solicitudActual.facultad}" id="editFacultad" required>
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label class="form-label">Correo Electrónico:</label>
+            <input type="email" class="form-control" value="${solicitudActual.correoElectronico}" id="editCorreo" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Contacto <span class="text-danger">*</span>:</label>
+            <input type="number" class="form-control" id="editContacto" value="${solicitudActual.numeroContacto}"required>
+          </div>
         </div>
-        <div class="col-md-6">
-          <label class="form-label">Salón:</label>
-          <input type="text" class="form-control" value="${solicitudActual.salon}" id="editSalon" required>
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label class="form-label">Número de Equipo:</label>
+            <input type="number" class="form-control" id="editNumEquipo" value="${solicitudActual.numEquipo}" required>
+            </div>
+          <div class="col-md-6">
+            <label class="form-label">Placa del Equipo:</label>
+            <input type="number" class="form-control" id="editPlaca" value="${solicitudActual.placaEquipo}" required>
+          </div>
         </div>
-      </div>
-      <div class="row mt-2">
-        <div class="col-md-6">
-          <label class="form-label">Correo Electrónico:</label>
-          <input type="email" class="form-control" value="${solicitudActual.correoElectronico}" id="editCorreo" required>
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label class="form-label">Nombre del equipo:</label>
+            <input type="text" class="form-control" value="${solicitudActual.ordenTrabajo || ''}" id="editOrden">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Tipo de Equipo:</label>
+            <select class="form-select" id="editTipoEquipo" value="${solicitudActual.tipoEquipo}" >
+              <option value="">Seleccione</option>
+              <option value="medicion_control">Equipos de Medición y Control</option>
+              <option value="opticos">Instrumentos Ópticos</option>
+              <option value="electricos">Equipos Eléctricos</option>
+              <option value="calentamiento">Equipos de Calentamiento</option>
+              <option value="herramientas">Herramientas</option>
+              <option value="tecnologia_computacion">Tecnología y Computación</option>
+              <option value="refrigeracion">Equipos de Refrigeración</option>
+              <option value="mecanicos">Equipos Mecánicos</option>
+              <option value="accesorios_laboratorio">Accesorios de Laboratorio</option>
+              <option value="componentes_electronicos">Componentes Electrónicos</option>
+              <option value="limpieza">Equipos de Limpieza</option>
+              <option value="equipos_laboratorio">Equipos de Laboratorio</option>
+              <option value="otros">Otros</option>
+            </select>
+          </div>
         </div>
-        <div class="col-md-6">
-          <label class="form-label">Contacto:</label>
-          <input type="text" class="form-control" value="${solicitudActual.numeroContacto}" id="editContacto" required>
+        <div class="row mt-3">
+          <div class="col-12">
+            <label class="form-label">Descripción del Problema:</label>
+            <textarea class="form-control" rows="4" id="editDescripcion">${solicitudActual.descripcionProblema}</textarea>
+          </div>
         </div>
-      </div>
-      <div class="row mt-2">
-        <div class="col-md-6">
-          <label class="form-label">Número de Equipo:</label>
-          <input type="text" class="form-control" value="${solicitudActual.numEquipo}" id="editNumEquipo" required>
+        <div class="d-flex justify-content-end mt-3 gap-2">
+          <button type="button" class="btn btn-secondary" id="btnCancelarEdicion">Cancelar</button>
+          <button type="button" class="btn btn-success" id="btnGuardarEdicion">Guardar</button>
         </div>
-        <div class="col-md-6">
-          <label class="form-label">Placa del Equipo:</label>
-          <input type="text" class="form-control" value="${solicitudActual.placaEquipo}" id="editPlaca" required>
-        </div>
-      </div>
-      <div class="row mt-2">
-        <div class="col-md-6">
-          <label class="form-label">Nombre del equipo:</label>
-          <input type="text" class="form-control" value="${solicitudActual.ordenTrabajo || ''}" id="editOrden">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Tipo de Equipo:</label>
-          <input type="text" class="form-control" value="${solicitudActual.tipoEquipo}" id="editTipoEquipo">
-        </div>
-      </div>
-      <div class="row mt-3">
-        <div class="col-12">
-          <label class="form-label">Descripción del Problema:</label>
-          <textarea class="form-control" rows="4" id="editDescripcion">${solicitudActual.descripcionProblema}</textarea>
-        </div>
-      </div>
-      <div class="d-flex justify-content-end mt-3 gap-2">
-        <button type="button" class="btn btn-secondary" id="btnCancelarEdicion">Cancelar</button>
-        <button type="button" class="btn btn-success" id="btnGuardarEdicion">Guardar</button>
-      </div>
-    </form>
-  `;
+      </form>
+    `;
   
-  // document.getElementById('btnCancelarEdicion').addEventListener('click', volverAInformacion);
-  document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicion);
+    document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicion);
 }
 function mostrarInformeCompleto() {
-  console.log('Diagnósticos:', solicitudActual.diagnosticos);
-  console.log('Mantenimientos:', solicitudActual.mantenimientos);
   if (!solicitudActual) return;
+  const updateIfExists = (id, value) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value || 'No disponible';
+  };
 
   // Información de la solicitud
-  document.getElementById('infoNumeroSolicitud').textContent = solicitudActual.numeroSolicitud || 'No disponible';
-  document.getElementById('infoFechaSolicitud').textContent = solicitudActual.fechaSolicitud || 'No disponible';
-  document.getElementById('infoSolicitante').textContent = solicitudActual.solicitante || 'No disponible';
-  document.getElementById('infoCargoSolicitante').textContent = solicitudActual.cargo || 'No disponible';
-  document.getElementById('infoLaboratorio').textContent = solicitudActual.nombreLaboratorio || 'No disponible';
-  document.getElementById('infoFacultad').textContent = solicitudActual.facultad || 'No disponible';
-  document.getElementById('infoBloque').textContent = `Bloque ${solicitudActual.bloque || 'N/A'}`;
-  document.getElementById('infoSalon').textContent = `Salón ${solicitudActual.salon || 'N/A'}`;
-  document.getElementById('infoCodigoLab').textContent = solicitudActual.codigoLaboratorio || 'N/A';
-  document.getElementById('infoCoordinador').textContent = solicitudActual.coordinador || 'No disponible';
+  updateIfExists('infoNumeroSolicitud', solicitudActual.numeroSolicitud);
+  updateIfExists('infoFechaSolicitud', solicitudActual.fechaSolicitud);
+  updateIfExists('infoSolicitante', solicitudActual.solicitante);
+  updateIfExists('infoCargoSolicitante', solicitudActual.cargo);
+  updateIfExists('infoLaboratorio', solicitudActual.nombreLaboratorio);
+  updateIfExists('infoFacultad', solicitudActual.facultad);
+  updateIfExists('infoBloque', `Bloque ${solicitudActual.bloque || 'N/A'}`);
+  updateIfExists('infoSalon', `Salón ${solicitudActual.salon || 'N/A'}`);
+  updateIfExists('infoCodigoLab', solicitudActual.codigoLaboratorio);
+  updateIfExists('infoCoordinador', solicitudActual.coordinador);
 
   // Información del equipo
   document.getElementById('infoNombreEquipo').textContent = solicitudActual.tipoEquipo || 'No disponible';
@@ -593,6 +688,90 @@ document.getElementById('btnGuardarInforme').addEventListener('click', function(
 
   mostrarInformeCompleto();
   alert('Datos guardados correctamente');
+});
+document.addEventListener('DOMContentLoaded', function() {
+  const btnContinuarRevisión = document.getElementById('btnContinuarRevisión');
+  const btnFinalizarProceso = document.getElementById('btnFinalizarProceso');
+  const btnRechazar = document.getElementById('btnRechazar');
+  const btnCancelarRechazo = document.getElementById('btnCancelarRechazo');
+  const btnConfirmarRechazo = document.getElementById('btnConfirmarRechazo');
+  const comentariosRechazo = document.getElementById('comentariosRechazo');
+  const comentarioRechazoInput = document.getElementById('comentarioRechazo');
+  const informeRevisionSection = document.getElementById('informeRevision');
+  const mantenimientoSection = document.getElementById('mantenimientoSection'); // Sección de mantenimiento
+  const diagnosticoSection = document.getElementById('diagnosticoSection'); // Sección de diagnóstico
+
+  // Evento para el botón "Continuar a Revisión"
+  if (btnContinuarRevisión) {
+    btnContinuarRevisión.addEventListener('click', function() {
+      // Ocultar la sección de mantenimiento (si está visible)
+      if (mantenimientoSection) mantenimientoSection.classList.add('collapse');
+      
+      // Ocultar la sección de diagnóstico (si está visible)
+      if (diagnosticoSection) diagnosticoSection.classList.add('collapse');
+
+      // Mostrar la sección de revisión
+      if (informeRevisionSection) {
+        informeRevisionSection.classList.remove('collapse');
+      }
+
+      // Llamar a la función para llenar el informe completo (esto puede depender de tus datos)
+      mostrarInformeCompleto();
+    });
+  }
+
+  // Función para mostrar el informe completo en la sección de Revisión
+  function mostrarInformeCompleto() {
+    const informeContainer = document.getElementById('mostrarInformeFinal');
+    
+    // Aquí llenarías los detalles del informe dinámicamente, como lo necesites
+    informeContainer.innerHTML = `
+      <h5>Detalles de la Solicitud</h5>
+      <p><strong>Solicitante:</strong> Juan Pérez</p>
+      <p><strong>Laboratorio:</strong> Química Orgánica</p>
+      <p><strong>Diagnóstico:</strong> El equipo está funcionando correctamente.</p>
+      <p><strong>Mantenimiento:</strong> Se realizó limpieza interna y ajuste de piezas.</p>
+    `;
+    
+    // Aquí ocultamos cualquier botón de edición en el informe
+    const editButtons = document.querySelectorAll('.btn-editar');
+    editButtons.forEach(button => {
+      button.style.display = 'none'; // Ocultar los botones de edición
+    });
+  }
+
+  // Evento para el botón "Confirmar formulario"
+  btnFinalizarProceso.addEventListener('click', function() {
+    alert('Formulario confirmado correctamente');
+    // Aquí puedes realizar cualquier acción adicional para confirmar el formulario
+  });
+
+  // Evento para el botón "Rechazar"
+  btnRechazar.addEventListener('click', function() {
+    comentariosRechazo.style.display = 'block'; // Muestra el campo de comentarios
+  });
+
+  // Evento para el botón "Cancelar Rechazo"
+  btnCancelarRechazo.addEventListener('click', function() {
+    comentariosRechazo.style.display = 'none'; // Oculta el campo de comentarios
+    comentarioRechazoInput.value = ''; // Limpia el campo de comentario
+  });
+
+  // Evento para el botón "Confirmar Rechazo"
+  btnConfirmarRechazo.addEventListener('click', function() {
+    const comentario = comentarioRechazoInput.value.trim();
+    if (!comentario) {
+      alert('Por favor, ingrese un comentario para rechazar el formulario.');
+      return;
+    }
+
+    // Guardar el comentario de rechazo (esto depende de cómo manejes los datos)
+    alert('Rechazo confirmado con el comentario: ' + comentario);
+    
+    // Aquí puedes agregar la lógica para guardar el rechazo o actualizar el estado en localStorage
+    comentariosRechazo.style.display = 'none'; // Ocultar la sección de comentarios después de confirmar
+    comentarioRechazoInput.value = ''; // Limpiar el campo de comentario
+  });
 });
 
 document.addEventListener('DOMContentLoaded', function() {

@@ -89,13 +89,23 @@ function agregarFilaATabla(solicitud) {
   btnEliminar.className = 'btn btn-danger btn-sm';
   btnEliminar.textContent = 'Eliminar';
   btnEliminar.onclick = () => {
-    cuerpoTabla.removeChild(fila);
-    eliminarDeAlmacenamiento(solicitud.numeroCaso);
+    // Pedir confirmación antes de eliminar
+    if (confirm(`¿Estás seguro de que deseas eliminar la solicitud #${solicitud.numeroCaso}?`)) {
+      cuerpoTabla.removeChild(fila);
+      eliminarDeAlmacenamiento(solicitud.numeroCaso);
+      alert('Solicitud eliminada.');
+    }
   };
 
   acciones.appendChild(selector);
   acciones.appendChild(btnAgregar);
   acciones.appendChild(btnEliminar);
+}
+
+function eliminarDeAlmacenamiento(numeroCaso) {
+  let bd = JSON.parse(localStorage.getItem('bdSolicitudes')) || [];
+  bd = bd.filter(item => item.numeroCaso !== numeroCaso);
+  localStorage.setItem('bdSolicitudes', JSON.stringify(bd));
 }
 
 function cargarDesdeAlmacenamiento() {
@@ -169,11 +179,12 @@ function validarHora(hora) {
 }
 
 function guardarSolicitud() {
+  // Obtener los valores de los campos
   const correo = document.getElementById('correoElectronico').value;
   const numEquipo = document.getElementById('numEquipo').value;
   const placaEquipo = document.getElementById('placaEquipo').value;
   const contacto = document.getElementById('numeroContacto').value;
-  const numeroSalon = document.getElementById('numeroSalon') ? document.getElementById('numeroSalon').value : ''; 
+  const numeroSalon = document.getElementById('numeroSalon') ? document.getElementById('numeroSalon').value : ''; // Agregar verificación
 
   const solicitud = {
     numeroSolicitud: document.getElementById('numeroSolicitud').value,
@@ -182,7 +193,7 @@ function guardarSolicitud() {
     nombreLaboratorio: document.getElementById('nombreLaboratorio').value,
     bloque: document.getElementById('NumBloque').value,
     facultad: document.getElementById('facultad').value,
-    salon: numeroSalon, 
+    salon: numeroSalon, // Usar la variable que contiene el valor del campo
     correoElectronico: document.getElementById('correoElectronico').value,
     numeroContacto: document.getElementById('numeroContacto').value,
     numEquipo: document.getElementById('numEquipo').value,
@@ -192,48 +203,53 @@ function guardarSolicitud() {
     descripcionProblema: document.getElementById('descripcionProblema').value
   };
 
+  // Guardar la solicitud temporalmente en localStorage
   let bd = JSON.parse(localStorage.getItem('bdSolicitudes')) || [];
   bd.push(solicitud);
   localStorage.setItem('bdSolicitudes', JSON.stringify(bd));
-  
+
+  // Validación de los campos
   if (!validarCorreo(correo)) {
     alert('El correo debe ser institucional (@unal.edu.co)');
+    eliminarSolicitud(solicitud.numeroCaso);  // Eliminar la solicitud si el correo no es válido
     return;
   }
 
   if (!validarNumerico(numEquipo)) {
     alert('Número de equipo debe ser numérico');
+    eliminarSolicitud(solicitud.numeroCaso);  // Eliminar la solicitud si el número de equipo no es válido
     return;
   }
-  
+
   if (!validarNumerico(placaEquipo)) {
     alert('Placa del equipo debe ser numérica');
+    eliminarSolicitud(solicitud.numeroCaso);  // Eliminar la solicitud si la placa no es válida
     return;
   }
-  
+
   if (!validarNumerico(contacto)) {
     alert('Número de contacto debe ser numérico');
+    eliminarSolicitud(solicitud.numeroCaso);  // Eliminar la solicitud si el número de contacto no es válido
     return;
   }
 
   if (!confirm('¿Estás seguro de guardar esta solicitud?')) {
+    eliminarSolicitud(solicitud.numeroCaso);  // Eliminar la solicitud si no se confirma
     return;
   }
 
   if (!validarCamposObligatorios()) {
     alert('Por favor completa todos los campos obligatorios marcados con *');
+    eliminarSolicitud(solicitud.numeroCaso);  // Eliminar la solicitud si faltan campos obligatorios
     return;
   }
+
   agregarFilaATabla(solicitud);
   inicializarFormulario();
 }
 
-
-// Agrega la fila con acciones
-
-
-// Eliminar del almacenamiento principal
-function eliminarDeAlmacenamiento(numeroCaso) {
+// Función para eliminar la solicitud de localStorage si no es válida
+function eliminarSolicitud(numeroCaso) {
   let bd = JSON.parse(localStorage.getItem('bdSolicitudes')) || [];
   bd = bd.filter(item => item.numeroCaso !== numeroCaso);
   localStorage.setItem('bdSolicitudes', JSON.stringify(bd));
