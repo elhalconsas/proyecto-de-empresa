@@ -447,27 +447,7 @@
           </tbody>
         </table>
       </div>
-    </div>
-
-      <!-- Diagnósticos Realizados -->
-      <div class="card mb-4 border-info">
-        <div class="card-header bg-info text-white">
-          <h5 class="mb-0">DIAGNÓSTICOS REALIZADOS</h5>
-        </div>
-        <div class="card-body" id="diagnosticoContainer">
-          <!-- Se llena dinámicamente desde JS -->
-        </div>
-      </div>
-
-      <!-- Mantenimientos Realizados -->
-      <div class="card mb-4 border-warning">
-        <div class="card-header bg-warning text-white">
-          <h5 class="mb-0">MANTENIMIENTOS REALIZADOS</h5>
-        </div>
-        <div class="card-body" id="mantenimientoContainer">
-          <!-- Se llena dinámicamente desde JS -->
-        </div>
-      </div>
+    </div>  
 
       <!-- Campos para datos faltantes -->
       <div class="card border-danger mb-4" id="datosFaltantesContainer" style="display: none;">
@@ -503,35 +483,43 @@
         </div>
       </div>
       
-    <div id="informeRevision" class="content-section collapse">
-      <h4>Revisión y Comentarios del Informe</h4>
-      
-      <!-- Sección para mostrar el informe completo -->
-      <div id="mostrarInformeFinal">
-        <!-- Aquí se llenará el informe con JavaScript -->
-      </div>
-      
-      <!-- Botones para confirmar o rechazar -->
-      <div class="d-flex justify-content-between mt-3">
-        <button class="btn btn-secondary" id="btnVolverInforme">Volver a Manejo Del Informe</button>
-        <button class="btn btn-success" id="btnFinalizarProceso">
-          Confirmar formulario
-        </button>
-        <button class="btn btn-danger" id="btnRechazar">
-          Rechazar
-        </button>
-      </div>
-
-      <!-- Comentarios del rechazo (oculto inicialmente) -->
-      <div id="comentariosRechazo" class="mt-3" style="display: none;">
-        <label for="comentarioRechazo" class="form-label">Comentario de Rechazo:</label>
-        <textarea id="comentarioRechazo" class="form-control" rows="4"></textarea>
-        <div class="d-flex justify-content-end mt-3">
-          <button class="btn btn-warning" id="btnCancelarRechazo">Cancelar Rechazo</button>
-          <button class="btn btn-danger" id="btnConfirmarRechazo">Confirmar Rechazo</button>
+    <!-- Revisión del Informe Section -->
+  <div id="informeRevision" class="content-section collapse">
+    <h4>Revisión y Comentarios del Informe</h4>
+    <div id="mostrarInformeFinal">
+      <!-- Se llena con JS -->
+    </div>
+    <div class="d-flex justify-content-between mt-3">
+      <button class="btn btn-secondary" id="btnVolverInforme">Volver a Manejo Del Informe</button>
+      <button class="btn btn-success" id="btnFinalizarProceso">Finalizar Proceso</button>
+      <button class="btn btn-danger" id="btnRechazarProceso">Rechazo del Proceso</button>
+    </div>
+    <div id="rechazarProcesoSection" class="collapse mt-4">
+      <h5>Motivo para Rechazo</h5>
+      <form id="formComentario" class="mb-3">
+        <div class="mb-3">
+          <label for="comentario" class="form-label">Comentario</label>
+          <textarea id="comentario" class="form-control" rows="4" required></textarea>
         </div>
+        <div class="mb-3 text-center">
+          <button type="submit" class="btn btn-danger">Guardar Comentario</button>
+        </div>
+      </form>
+      <div id="comentariosList">
+        <h6>Comentarios Anteriores</h6>
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Comentarios</th>
+            </tr>
+          </thead>
+          <tbody id="comentariosTabla"></tbody>
+        </table>
       </div>
     </div>
+
+  </div>
+
   </div>
  
   

@@ -1,18 +1,21 @@
 document.addEventListener('DOMContentLoaded', function() {
+  // Recuperar el número de caso de localStorage
   const numeroCaso = localStorage.getItem('detalleActual');
-  const solicitudes = JSON.parse(localStorage.getItem('finalizadas')) || [];
-  const solicitud = solicitudes.find(s => s.numeroCaso === numeroCaso);
-
+  const solicitudesFinalizadas = JSON.parse(localStorage.getItem('finalizadas')) || [];
+  
+  // Buscar la solicitud en las finalizadas
+  const solicitud = solicitudesFinalizadas.find(s => s.numeroCaso === numeroCaso);
+  
   if (solicitud) {
-    generarInformeFinal(solicitud);
+    // Llamar a la función para generar el informe
+    generarInforme(solicitud);
+  } else {
+    alert('No se encontró la solicitud en la lista de finalizadas.');
   }
 });
 
-function generarInformeFinal(solicitud) {
+function generarInforme(solicitud) {
   const informe = document.getElementById('informeFinal');
-  const diagnosticoEntries = solicitud.diagnosticoEntries || [];
-  const mantenimientoEntries = solicitud.mantenimientoEntries || [];
-  
   let html = `
     <div class="card mb-4">
       <div class="card-header bg-primary text-white">
@@ -24,7 +27,7 @@ function generarInformeFinal(solicitud) {
           <div class="col-md-6">
             <table class="table table-bordered">
               <tr>
-                <th>Fecha de finalización</th>
+                <th>Fecha de Finalización</th>
                 <td>${solicitud.fechaFinalizacion || new Date().toLocaleDateString()}</td>
               </tr>
               <tr>
@@ -65,7 +68,7 @@ function generarInformeFinal(solicitud) {
                 <td>${solicitud.tecnicoAsignado}</td>
               </tr>
               <tr>
-                <th>Fecha inicio</th>
+                <th>Fecha de Inicio</th>
                 <td>${solicitud.fechaInicio}</td>
               </tr>
               <tr>
@@ -75,61 +78,28 @@ function generarInformeFinal(solicitud) {
             </table>
           </div>
         </div>
-        
-        <h5 class="mt-4">Descripción del problema</h5>
+
+        <h5 class="mt-4">Descripción del Problema</h5>
         <div class="mb-4 p-3 bg-light rounded">
           ${solicitud.descripcionProblema || 'No se registró descripción'}
         </div>
-        
+
         <h5 class="mt-4">Diagnóstico</h5>
         <div class="mb-4">
-          ${diagnosticoEntries.map(entry => `
-            <div class="card mb-3">
-              <div class="card-header">
-                <h6>${entry.titulo} <small>(${entry.fecha})</small></h6>
-              </div>
-              <div class="card-body">
-                <p>${entry.comentario}</p>
-                ${entry.imagenes && entry.imagenes.length > 0 ? `
-                  <div class="d-flex flex-wrap">
-                    ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-          `).join('') || '<p>No se registraron diagnósticos</p>'}
+          ${solicitud.diagnostico || 'No se registró diagnóstico'}
         </div>
-        
+
         <h5 class="mt-4">Mantenimiento</h5>
-        ${mantenimientoEntries.length > 0 ? `
-          <div class="mb-4">
-            ${mantenimientoEntries.map(entry => `
-              <div class="card mb-3">
-                <div class="card-header">
-                  <h6>${entry.titulo} <small>(${entry.fecha})</small></h6>
-                </div>
-                <div class="card-body">
-                  <p><strong>Actividades:</strong> ${entry.actividades}</p>
-                  <p><strong>Partes reemplazadas:</strong> ${entry.partes}</p>
-                  ${entry.imagenes && entry.imagenes.length > 0 ? `
-                    <div class="d-flex flex-wrap">
-                      ${entry.imagenes.map(img => `<img src="${img.url}" class="image-preview">`).join('')}
-                    </div>
-                  ` : ''}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        ` : '<p>No se realizó mantenimiento</p>'}
-        
-        <h5 class="mt-4">Conclusión</h5>
+        ${solicitud.mantenimiento || 'No se registró mantenimiento'}
+
+        <h5 class="mt-4">Comentarios de Revisión</h5>
         <div class="p-3 bg-light rounded">
-          ${solicitud.conclusion || 'No se registró conclusión'}
+          ${solicitud.comentarioRevisión || 'No se registró comentario de revisión'}
         </div>
       </div>
     </div>
   `;
-  
+
   informe.innerHTML = html;
 }
 

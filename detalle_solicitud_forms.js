@@ -237,14 +237,14 @@ document.addEventListener('DOMContentLoaded', function () {
   if (btnSaltarMantenimiento) {
     btnSaltarMantenimiento.addEventListener('click', function() {
       // Cambiar la etapa a "En mantenimiento"
-      actualizarEtapa('En mantenimiento');
+      actualizarEtapa('En informe');
 
       // Ocultar la sección de diagnóstico
       const diagSection = document.getElementById('diagnosticoSection');
       if (diagSection) diagSection.classList.add('collapse');
 
       // Mostrar la sección de mantenimiento
-      const mantSection = document.getElementById('mantenimientoSection');
+      const mantSection = document.getElementById('informeSection');
       if (mantSection) mantSection.classList.remove('collapse');
 
       // Actualizar el estado en la solicitud
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const solicitudActual = solicitudes.find(s => s.numeroCaso === numeroCaso);
 
       if (solicitudActual) {
-        solicitudActual.estado = 'En mantenimiento'; // Actualizar estado
+        solicitudActual.estado = 'En informe'; // Actualizar estado
         // Guardar la solicitud con el nuevo estado en localStorage
         const index = solicitudes.findIndex(s => s.numeroCaso === solicitudActual.numeroCaso);
         if (index !== -1) {
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       }
       
-      alert('La solicitud ha sido movida a la etapa de mantenimiento.');
+      alert('La solicitud ha sido movida a la etapa de En informe');
     });
   }
 });
@@ -689,90 +689,6 @@ document.getElementById('btnGuardarInforme').addEventListener('click', function(
   mostrarInformeCompleto();
   alert('Datos guardados correctamente');
 });
-document.addEventListener('DOMContentLoaded', function() {
-  const btnContinuarRevisión = document.getElementById('btnContinuarRevisión');
-  const btnFinalizarProceso = document.getElementById('btnFinalizarProceso');
-  const btnRechazar = document.getElementById('btnRechazar');
-  const btnCancelarRechazo = document.getElementById('btnCancelarRechazo');
-  const btnConfirmarRechazo = document.getElementById('btnConfirmarRechazo');
-  const comentariosRechazo = document.getElementById('comentariosRechazo');
-  const comentarioRechazoInput = document.getElementById('comentarioRechazo');
-  const informeRevisionSection = document.getElementById('informeRevision');
-  const mantenimientoSection = document.getElementById('mantenimientoSection'); // Sección de mantenimiento
-  const diagnosticoSection = document.getElementById('diagnosticoSection'); // Sección de diagnóstico
-
-  // Evento para el botón "Continuar a Revisión"
-  if (btnContinuarRevisión) {
-    btnContinuarRevisión.addEventListener('click', function() {
-      // Ocultar la sección de mantenimiento (si está visible)
-      if (mantenimientoSection) mantenimientoSection.classList.add('collapse');
-      
-      // Ocultar la sección de diagnóstico (si está visible)
-      if (diagnosticoSection) diagnosticoSection.classList.add('collapse');
-
-      // Mostrar la sección de revisión
-      if (informeRevisionSection) {
-        informeRevisionSection.classList.remove('collapse');
-      }
-
-      // Llamar a la función para llenar el informe completo (esto puede depender de tus datos)
-      mostrarInformeCompleto();
-    });
-  }
-
-  // Función para mostrar el informe completo en la sección de Revisión
-  function mostrarInformeCompleto() {
-    const informeContainer = document.getElementById('mostrarInformeFinal');
-    
-    // Aquí llenarías los detalles del informe dinámicamente, como lo necesites
-    informeContainer.innerHTML = `
-      <h5>Detalles de la Solicitud</h5>
-      <p><strong>Solicitante:</strong> Juan Pérez</p>
-      <p><strong>Laboratorio:</strong> Química Orgánica</p>
-      <p><strong>Diagnóstico:</strong> El equipo está funcionando correctamente.</p>
-      <p><strong>Mantenimiento:</strong> Se realizó limpieza interna y ajuste de piezas.</p>
-    `;
-    
-    // Aquí ocultamos cualquier botón de edición en el informe
-    const editButtons = document.querySelectorAll('.btn-editar');
-    editButtons.forEach(button => {
-      button.style.display = 'none'; // Ocultar los botones de edición
-    });
-  }
-
-  // Evento para el botón "Confirmar formulario"
-  btnFinalizarProceso.addEventListener('click', function() {
-    alert('Formulario confirmado correctamente');
-    // Aquí puedes realizar cualquier acción adicional para confirmar el formulario
-  });
-
-  // Evento para el botón "Rechazar"
-  btnRechazar.addEventListener('click', function() {
-    comentariosRechazo.style.display = 'block'; // Muestra el campo de comentarios
-  });
-
-  // Evento para el botón "Cancelar Rechazo"
-  btnCancelarRechazo.addEventListener('click', function() {
-    comentariosRechazo.style.display = 'none'; // Oculta el campo de comentarios
-    comentarioRechazoInput.value = ''; // Limpia el campo de comentario
-  });
-
-  // Evento para el botón "Confirmar Rechazo"
-  btnConfirmarRechazo.addEventListener('click', function() {
-    const comentario = comentarioRechazoInput.value.trim();
-    if (!comentario) {
-      alert('Por favor, ingrese un comentario para rechazar el formulario.');
-      return;
-    }
-
-    // Guardar el comentario de rechazo (esto depende de cómo manejes los datos)
-    alert('Rechazo confirmado con el comentario: ' + comentario);
-    
-    // Aquí puedes agregar la lógica para guardar el rechazo o actualizar el estado en localStorage
-    comentariosRechazo.style.display = 'none'; // Ocultar la sección de comentarios después de confirmar
-    comentarioRechazoInput.value = ''; // Limpiar el campo de comentario
-  });
-});
 
 document.addEventListener('DOMContentLoaded', function() {
   const informeSection = document.getElementById('informeSection');
@@ -835,4 +751,231 @@ document.addEventListener('DOMContentLoaded', function() {
     
     alert('Informe guardado correctamente');
   });
+});
+function mostrarInformeFinal() {
+  
+  if (!solicitudActual) return;
+  
+  const container = document.getElementById('mostrarInformeFinal');
+  if (!container) return;
+  
+  container.innerHTML = `
+    <!-- Información de la Solicitud -->
+    <div class="card mb-4 border-primary">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">INFORMACIÓN DE LA SOLICITUD</h5>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-bordered mb-0">
+          <tbody>
+            <tr class="table-light">
+              <td class="w-25 font-weight-bold">No. Solicitud:</td>
+              <td class="w-25">${solicitudActual.numeroSolicitud || 'No disponible'}</td>
+              <td class="w-25 font-weight-bold">Fecha Solicitud:</td>
+              <td class="w-25">${solicitudActual.fechaSolicitud || 'No disponible'}</td>
+            </tr>
+            <tr>
+              <td class="font-weight-bold">Solicitante:</td>
+              <td>${solicitudActual.solicitante || 'No disponible'}</td>
+              <td class="font-weight-bold">Cargo:</td>
+              <td>${solicitudActual.cargo || 'No disponible'}</td>
+            </tr>
+            <tr class="table-light">
+              <td class="font-weight-bold">Laboratorio:</td>
+              <td>${solicitudActual.nombreLaboratorio || 'No disponible'}</td>
+              <td class="font-weight-bold">Facultad:</td>
+              <td>${solicitudActual.facultad || 'No disponible'}</td>
+            </tr>
+            <tr>
+              <td class="font-weight-bold">Ubicación:</td>
+              <td>${solicitudActual.bloque ? 'Bloque ' + solicitudActual.bloque : 'N/A'}</td>
+              <td>${solicitudActual.salon ? 'Salón ' + solicitudActual.salon : 'Salón N/A'}</td>
+              <td>Código: ${solicitudActual.codigoLaboratorio || 'N/A'}</td>
+            </tr>
+            <tr class="table-light">
+              <td class="font-weight-bold">Coordinador:</td>
+              <td colspan="3">${solicitudActual.coordinador || 'No disponible'}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Información del Equipo -->
+    <div class="card mb-4 border-success">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0">INFORMACIÓN DEL EQUIPO</h5>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-bordered mb-0">
+          <tbody>
+            <tr class="table-light">
+              <td class="w-25 font-weight-bold">Equipo:</td>
+              <td class="w-25">${solicitudActual.tipoEquipo || 'No disponible'}</td>
+              <td class="w-25 font-weight-bold">Placa UNAL:</td>
+              <td class="w-25">${solicitudActual.placaEquipo || 'No disponible'}</td>
+            </tr>
+            <tr>
+              <td rowspan="3" class="font-weight-bold align-middle">Especificaciones:</td>
+              <td class="font-weight-bold">Marca:</td>
+              <td>${solicitudActual.marca || 'No disponible'}</td>
+              <td rowspan="3" class="text-center align-middle">
+                <div class="text-muted small">Código QR</div>
+                <div class="display-4">📷</div>
+              </td>
+            </tr>
+            <tr class="table-light">
+              <td class="font-weight-bold">Modelo:</td>
+              <td>${solicitudActual.modelo || 'No disponible'}</td>
+            </tr>
+            <tr>
+              <td class="font-weight-bold">N° Serie:</td>
+              <td>${solicitudActual.numeroSerie || 'No disponible'}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Información del Diagnóstico -->
+    <div class="card mb-4 border-info">
+      <div class="card-header bg-info text-white">
+        <h5 class="mb-0">INFORMACIÓN DEL DIAGNÓSTICO</h5>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-bordered mb-0">
+          <tbody>
+            <tr class="table-light">
+              <td class="w-25 font-weight-bold">Responsable:</td>
+              <td class="w-25">${solicitudActual.responsableDiagnostico || 'No disponible'}</td>
+              <td class="w-25 font-weight-bold">Fecha:</td>
+              <td class="w-25">${solicitudActual.fechaDiagnostico || 'No disponible'}</td>
+            </tr>
+            <tr>
+              <td class="font-weight-bold">Persona que atendió:</td>
+              <td>${solicitudActual.personaAtendio || 'No disponible'}</td>
+              <td class="font-weight-bold">Cargo/Rol:</td>
+              <td>${solicitudActual.cargoRol || 'No disponible'}</td>
+            </tr>
+            <tr class="table-light">
+              <td class="font-weight-bold">Contacto:</td>
+              <td colspan="3">${solicitudActual.contacto || 'No disponible'}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Diagnósticos Realizados -->
+    <div class="card mb-4 border-info">
+      <div class="card-header bg-info text-white">
+        <h5 class="mb-0">DIAGNÓSTICOS REALIZADOS</h5>
+      </div>
+      <div class="card-body" id="diagnosticoFinalContainer">
+        ${solicitudActual.diagnosticos && solicitudActual.diagnosticos.length > 0 ? 
+          solicitudActual.diagnosticos.map(d => `
+            <div class="entry-item mb-3">
+              <h6>${d.titulo || 'Diagnóstico'}</h6>
+              <p>${d.comentario || 'Sin comentarios'}</p>
+              ${d.imagenes && d.imagenes.length > 0 ? 
+                `<div class="mt-2">Imágenes: ${d.imagenes.map(img => 
+                  `<span class="badge bg-info text-dark me-1">${img}</span>`
+                ).join('')}</div>` : ''}
+              <small class="text-muted">${new Date(d.fecha).toLocaleString()}</small>
+            </div>
+          `).join('') : 
+          '<div class="text-muted">No hay diagnósticos registrados.</div>'}
+      </div>
+    </div>
+
+    <!-- Mantenimientos Realizados -->
+    <div class="card mb-4 border-warning">
+      <div class="card-header bg-warning text-white">
+        <h5 class="mb-0">MANTENIMIENTOS REALIZADOS</h5>
+      </div>
+      <div class="card-body" id="mantenimientoFinalContainer">
+        ${solicitudActual.mantenimientos && solicitudActual.mantenimientos.length > 0 ? 
+          solicitudActual.mantenimientos.map(m => `
+            <div class="entry-item mb-3">
+              <h6>${m.titulo || 'Mantenimiento'}</h6>
+              <p><strong>Actividades:</strong> ${m.actividades || 'No especificado'}</p>
+              ${m.partes ? `<p><strong>Partes:</strong> ${m.partes}</p>` : ''}
+              ${m.imagenes && m.imagenes.length > 0 ? 
+                `<div class="mt-2">Imágenes: ${m.imagenes.map(img => 
+                  `<span class="badge bg-info text-dark me-1">${img}</span>`
+                ).join('')}</div>` : ''}
+              <small class="text-muted">${new Date(m.fecha).toLocaleString()}</small>
+            </div>
+          `).join('') : 
+          '<div class="text-muted">No hay mantenimientos registrados.</div>'}
+      </div>
+    </div>
+  `;
+}
+// Busca esta parte en tu código y actualízala
+const btnContinuarRevision = document.getElementById('btnContinuarRevisión');
+if (btnContinuarRevision) {
+  btnContinuarRevision.addEventListener('click', function() {
+    // Oculta la sección de informe
+    const informeSection = document.getElementById('informeSection');
+    if (informeSection) informeSection.classList.add('collapse');
+    
+    // Muestra la sección de revisión
+    const revisionSection = document.getElementById('informeRevision');
+    if (revisionSection) revisionSection.classList.remove('collapse');
+    
+    // Muestra el informe final
+    mostrarInformeFinal();
+    
+    // Actualiza estado
+    actualizarEtapa('En aprobacion');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const btnRechazarProceso = document.getElementById('btnRechazarProceso');
+  const rechazarProcesoSection = document.getElementById('rechazarProcesoSection');
+  const formComentario = document.getElementById('formComentario');
+  const comentariosTabla = document.getElementById('comentariosTabla');
+
+  if (btnRechazarProceso) {
+    btnRechazarProceso.addEventListener('click', function () {
+      // Show the comment section when the "Rechazar Proceso" button is clicked
+      rechazarProcesoSection.classList.toggle('collapse');
+    });
+  }
+
+  // Submit the comment
+  if (formComentario) {
+    formComentario.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const comentario = document.getElementById('comentario').value;
+      if (!comentario) {
+        alert('Por favor ingrese un comentario.');
+        return;
+      }
+
+      // Save comment to localStorage
+      let comentarios = JSON.parse(localStorage.getItem('comentarios')) || [];
+      comentarios.push({ comentario, fecha: new Date().toLocaleString() });
+      localStorage.setItem('comentarios', JSON.stringify(comentarios));
+
+      // Clear the textarea and reload the comment list
+      document.getElementById('comentario').value = '';
+      mostrarComentarios();
+    });
+  }
+
+  // Function to display the stored comments
+  function mostrarComentarios() {
+    const comentarios = JSON.parse(localStorage.getItem('comentarios')) || [];
+    comentariosTabla.innerHTML = ''; // Clear the table
+    comentarios.forEach((comentarioData) => {
+      const row = comentariosTabla.insertRow();
+      row.insertCell(0).textContent = comentarioData.comentario;
+    });
+  }
+
+  // Load comments on page load
+  mostrarComentarios();
 });

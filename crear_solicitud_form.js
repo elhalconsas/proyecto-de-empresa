@@ -45,7 +45,7 @@ function agregarFilaATabla(solicitud) {
 
   const selector = document.createElement('select');
   selector.className = 'form-select form-select-sm';
-  ['Seleccione técnico', 'Nombre1', 'Nombre2', 'Nombre3', 'Nombre4'].forEach(nombre => {
+  ['Seleccione técnico', 'Samuel Abreu', 'Giancarlo Mier', 'Manuel Restrepo', 'Jeremy Paez'].forEach(nombre => {
     const opt = document.createElement('option');
     opt.value = nombre;
     opt.textContent = nombre;
@@ -112,19 +112,20 @@ function cargarDesdeAlmacenamiento() {
   const solicitudes = JSON.parse(localStorage.getItem('bdSolicitudes')) || [];
   const itemsPerPage = 10;
   const totalPages = Math.ceil(solicitudes.length / itemsPerPage);
-  
+
   function mostrarPagina(page) {
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     const paginatedItems = solicitudes.slice(start, end);
     
+    // Render the table rows
     paginatedItems.forEach(solicitud => {
       agregarFilaATabla(solicitud);
     });
-    
+
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = '';
-    
+
     for (let i = 1; i <= totalPages; i++) {
       const li = document.createElement('li');
       li.className = `page-item ${i === page ? 'active' : ''}`;
@@ -136,25 +137,27 @@ function cargarDesdeAlmacenamiento() {
       pagination.appendChild(li);
     }
   }
-  
+
   if (solicitudes.length > 0) {
-    mostrarPagina(1);
+    mostrarPagina(1); // Initially show the first page
   }
 }
+w
 
 function validarCamposObligatorios() {
   const campos = [
-    'nombreLaboratorio',
-    'NumBloque',
-    'facultad',
-    'numSalon',
-    'correoElectronico',
-    'numeroContacto',
-    'numEquipo',
-    'placaEquipo',
-    'tipoEquipo',
-    'ordenTrabajo'
-  ];
+   'nombreLaboratorio',
+   'NumBloque',
+   'facultad',
+   'numSalon',
+   'correoElectronico',
+   'numeroContacto',
+   'numEquipo',
+   'placaEquipo',
+   'tipoEquipo',
+   'ordenTrabajo'
+ ];
+
 
   return campos.every(id => {
     const campo = document.getElementById(id);
@@ -240,7 +243,7 @@ function guardarSolicitud() {
 
   if (!validarCamposObligatorios()) {
     alert('Por favor completa todos los campos obligatorios marcados con *');
-    eliminarSolicitud(solicitud.numeroCaso);  // Eliminar la solicitud si faltan campos obligatorios
+      // Eliminar la solicitud si faltan campos obligatorios
     return;
   }
 

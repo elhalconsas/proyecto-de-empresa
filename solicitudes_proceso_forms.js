@@ -3,6 +3,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const itemsPerPage = 10;
   const totalPages = Math.ceil(solicitudes.length / itemsPerPage);
   
+  // Filtrar automáticamente las solicitudes en estado "Finalizado"
+  solicitudes.forEach((solicitud, index) => {
+    if (solicitud.estado === 'Finalizado') {
+      // Eliminar de "En Proceso" y agregar a "Finalizadas"
+      moverASolicitudesFinalizadas(solicitud, index);
+    }
+  });
+
   function mostrarPagina(page) {
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
@@ -21,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
       pagination.appendChild(li);
     }
   }
-  
+
   if (solicitudes.length > 0) {
     mostrarPagina(1);
   } else {
@@ -29,12 +37,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-
-
 function cargarSolicitudesEnProceso(solicitudes) {
   const tabla = document.getElementById('tablaProceso');
   
-  // Verifica si la tabla existe antes de intentar modificarla
   if (!tabla) {
     console.error("No se encontró el elemento 'tablaProceso' en el DOM.");
     return;
@@ -70,21 +75,40 @@ function cargarSolicitudesEnProceso(solicitudes) {
     const celdaAcciones = fila.insertCell(5);
     celdaAcciones.className = 'd-flex gap-2';
 
+    // Botón de "Ver Detalles"
     const btnVer = document.createElement('button');
     btnVer.textContent = 'Ver Detalles';
     btnVer.className = 'btn btn-info btn-sm';
     btnVer.onclick = () => verDetalle(solicitud.numeroCaso);
-
-    const btnEliminar = document.createElement('button');
-    btnEliminar.textContent = 'Eliminar';
-    btnEliminar.className = 'btn btn-danger btn-sm';
-    btnEliminar.onclick = () => eliminarSolicitud(index);
-
+    
+    // Agregar los botones
     celdaAcciones.appendChild(btnVer);
-    celdaAcciones.appendChild(btnEliminar);
   });
 }
 
+// Función para mover la solicitud a "Finalizadas"
+function moverASolicitudesFinalizadas(solicitud, index) {
+  let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
+  let finalizadas = JSON.parse(localStorage.getItem('finalizadas')) || [];
+
+  // Eliminar de "En Proceso"
+  enProceso.splice(index, 1);
+  localStorage.setItem('enProceso', JSON.stringify(enProceso));
+
+  // Agregar a "Finalizadas"
+  finalizadas.push(solicitud);
+  localStorage.setItem('finalizadas', JSON.stringify(finalizadas));
+
+  // Actualizar la tabla en el frontend
+  alert(`La solicitud #${solicitud.numeroCaso} ha sido movida a "Finalizadas".`);
+  window.location.reload();
+}
+
+// Función para ver los detalles de la solicitud
+function verDetalle(numeroCaso) {
+  localStorage.setItem('detalleActual', numeroCaso);
+  window.location.href = 'detalle_solicitud.html';
+}
 
 function obtenerClaseEstado(estado) {
   switch (estado) {
@@ -95,19 +119,5 @@ function obtenerClaseEstado(estado) {
     case 'En aprobacion': return 'bg-danger';
     case 'Finalizado': return 'bg-success';
     default: return 'bg-secondary';
-  }
-}
-
-function verDetalle(numeroCaso) {
-  localStorage.setItem('detalleActual', numeroCaso);
-  window.location.href = 'detalle_solicitud.html';
-}
-
-function eliminarSolicitud(indice) {
-  let solicitudes = JSON.parse(localStorage.getItem('enProceso')) || [];
-  if (confirm(`¿Deseas eliminar la solicitud #${solicitudes[indice].numeroCaso}?`)) {
-    solicitudes.splice(indice, 1);
-    localStorage.setItem('enProceso', JSON.stringify(solicitudes));
-    window.location.reload();
   }
 }
