@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Detalle de Solicitud</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
   <style>
     .btn-etapa:disabled {
       opacity: 0.6;
@@ -13,7 +14,6 @@
       color: #6c757d;
       border-color: #dee2e6;
     }
-
     .btn-primary:disabled {
       opacity: 0.6;
       cursor: not-allowed;
@@ -101,26 +101,45 @@
       top: 1px;
       z-index: -1;
     }
+    .card-header h5 {
+      font-size: 1.1rem;
+    }
+    .table td, .table th {
+      vertical-align: middle;
+    }
+    .editable-field {
+      position: relative;
+    }
+    .editable-field .form-control {
+      display: none;
+      margin-top: 5px;
+    }
+    .editable-field.editing span {
+      display: none;
+    }
+    .editable-field.editing .form-control {
+      display: block;
+    }
   </style>
 </head>
 <body>
   <header class="p-3 d-flex flex-wrap align-items-center justify-content-between">
-  <div class="d-flex align-items-center">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/UNAL_Aplicaci%C3%B3n_Medell%C3%ADn.svg"
-         alt="logoUNAL" class="logo me-4" onclick="location.href='web_principal.html'">
-    <div class="d-flex flex-wrap gap-2">
-      <button class="btn btn-primary" onclick="location.href='crear_solicitud.html'">
-        Crear una nueva solicitud <span id="contadorNuevas" class="badge bg-secondary badge-counter">0</span>
-      </button>
-      <button class="btn btn-danger" onclick="location.href='solicitudes_proceso.html'">
-        Solicitudes en proceso <span id="contadorProceso" class="badge bg-secondary badge-counter">0</span>
-      </button>
-      <button class="btn btn-success" onclick="location.href='solicitudes_finalizadas.html'">
-        solicitudes finalizadas <span id="contadorFinalizadas" class="badge bg-secondary badge-counter">0</span>
-      </button>
+    <div class="d-flex align-items-center">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/UNAL_Aplicaci%C3%B3n_Medell%C3%ADn.svg"
+           alt="logoUNAL" class="logo me-4" onclick="location.href='web_principal.html'">
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-primary" onclick="location.href='crear_solicitud.html'">
+          Crear una nueva solicitud <span id="contadorNuevas" class="badge bg-secondary badge-counter">0</span>
+        </button>
+        <button class="btn btn-danger" onclick="location.href='solicitudes_proceso.html'">
+          Solicitudes en proceso <span id="contadorProceso" class="badge bg-secondary badge-counter">0</span>
+        </button>
+        <button class="btn btn-success" onclick="location.href='solicitudes_finalizadas.html'">
+          solicitudes finalizadas <span id="contadorFinalizadas" class="badge bg-secondary badge-counter">0</span>
+        </button>
+      </div>
     </div>
-  </div>
-</header>
+  </header>
   
   <div class="container mt-4">
     <div class="mb-4">
@@ -140,14 +159,13 @@
       </table>
     </div>
     
-    
     <div class="etapa-container mb-4">
       <div class="etapa-progress"></div>
       <div>
         <button id="btnEtapaInformacion" class="btn btn-etapa etapa-activa" disabled>
           <span class="etapa-indicator">1</span> Información de la Solicitud
         </button>
-        <button id="btnEtapaDiagnostico" class="btn btn-etapa"  disabled title="Complete la etapa anterior para habilitar">
+        <button id="btnEtapaDiagnostico" class="btn btn-etapa" disabled title="Complete la etapa anterior para habilitar">
           <span class="etapa-indicator">2</span> Diagnóstico
         </button>
         <button id="btnEtapaMantenimiento" class="btn btn-etapa" disabled>
@@ -159,9 +177,8 @@
         <button id="btnEtapaRevision" class="btn btn-etapa" disabled>
           <span class="etapa-indicator">5</span> Revisión del informe
         </button>
+      </div>
     </div>
-  </div>
-    
     
     <div id="informacionSection" class="content-section">
       <h4>Información de la Solicitud</h4>
@@ -170,7 +187,7 @@
       </div>
       <div class="d-flex justify-content-end mt-3 gap-2">
         <button id="btnEditar" class="btn btn-warning me-2">Actualizar Información</button>
-        <button id="btnContinuarDiagnostico" class="btn btn-primary" >Continuar a Diagnóstico</button>
+        <button id="btnContinuarDiagnostico" class="btn btn-primary">Continuar a Diagnóstico</button>
       </div>
     </div>                
     
@@ -178,8 +195,9 @@
     <div id="diagnosticoSection" class="content-section collapse">
       <h4>Diagnóstico</h4>
       
-    
-      <div id="diagnosticoEntries"></div>
+      <div id="diagnosticoEntries">
+        <!-- Entradas de diagnóstico (se llenan con JS) -->
+      </div>
    
       <form id="formDiagnostico">
         <div class="mb-3">
@@ -201,12 +219,11 @@
         </div>
       </form>
       
-       <div class="d-flex justify-content-between mt-3">
-    <button class="btn btn-primary" id="btnContinuarMantenimiento">Continuar a Mantenimiento</button>
-    <button class="btn btn-danger" id="btnSaltarMantenimiento">No es posible mantenimiento</button>
-  </div>
+      <div class="d-flex justify-content-between mt-3">
+        <button class="btn btn-primary" id="btnContinuarMantenimiento">Continuar a Mantenimiento</button>
+        <button class="btn btn-danger" id="btnSaltarMantenimiento">No es posible mantenimiento</button>
+      </div>
     </div>
-    
 
     <div id="mantenimientoSection" class="content-section collapse">
       <h4>Mantenimiento</h4>
@@ -232,7 +249,7 @@
         </div>
         <div class="d-flex justify-content-between mt-3">
           <button type="button" class="btn btn-secondary" id="btnVolverDiagnostico">Volver a Diagnóstico</button>
-          <button type="submit" class="btn btn-success">Guardar datos </button>
+          <button type="submit" class="btn btn-success">Guardar datos</button>
         </div>
       </form>
       
@@ -240,20 +257,241 @@
         <button class="btn btn-primary" id="btnContinuarInforme">Continuar a Informe</button>
       </div>
     </div>
-    
-  
+
+    <!-- Sección de Informe Completo -->
     <div id="informeSection" class="content-section collapse">
-      <h4>Utimos Detalles del Informe</h4>
-      <div id="resumenInforme">
-        <!-- llenado con JS -->
+    <h4 class="mb-4">Últimos Detalles del Informe</h4>
+    
+    <!-- Información de la Solicitud -->
+    <div class="card mb-4 border-primary">
+      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">INFORMACIÓN DE LA SOLICITUD</h5>
+        <button id="btnEditarSolicitud" class="btn btn-sm btn-light">
+          <i class="bi bi-pencil"></i> Editar
+        </button>
       </div>
-      <div class="d-flex justify-content-between mt-3">
-        <button class="btn btn-secondary" id="btnVolverMantenimiento">Volver a Mantenimiento</button>
-        <button class="btn btn-primary" id="btnInformeRevision">Continuar a Revisión</button>
+      <div class="card-body p-0">
+        <table class="table table-bordered mb-0">
+          <tbody>
+            <tr class="table-light">
+              <td class="w-25 font-weight-bold">No. Solicitud:</td>
+              <td class="w-25 editable-field">
+                <span id="displayNumeroSolicitud">7408</span>
+                <input type="text" class="form-control" id="inputNumeroSolicitud" value="7408">
+              </td>
+              <td class="w-25 font-weight-bold">Fecha Solicitud:</td>
+              <td class="w-25 editable-field">
+                <span id="displayFechaSolicitud">11/7/2025</span>
+                <input type="date" class="form-control" id="inputFechaSolicitud" value="2025-07-11">
+              </td>
+            </tr>
+            <tr>
+              <td class="font-weight-bold">Solicitante:</td>
+              <td class="editable-field">
+                <span id="displaySolicitante">No disponible</span>
+                <input type="text" class="form-control" id="inputSolicitante">
+              </td>
+              <td class="font-weight-bold">Cargo:</td>
+              <td class="editable-field">
+                <span id="displayCargo">No disponible</span>
+                <input type="text" class="form-control" id="inputCargo">
+              </td>
+            </tr>
+            <tr class="table-light">
+              <td class="font-weight-bold">Laboratorio:</td>
+              <td class="editable-field">
+                <span id="displayLaboratorio">asd</span>
+                <input type="text" class="form-control" id="inputLaboratorio" value="asd">
+              </td>
+              <td class="font-weight-bold">Facultad:</td>
+              <td class="editable-field">
+                <span id="displayFacultad">Minas</span>
+                <input type="text" class="form-control" id="inputFacultad" value="Minas">
+              </td>
+            </tr>
+            <tr>
+              <td class="font-weight-bold">Ubicación:</td>
+              <td class="editable-field">
+                <span id="displayBloque">Bloque qeqwe</span>
+                <input type="text" class="form-control" id="inputBloque" value="qeqwe">
+              </td>
+              <td class="editable-field">
+                <span id="displaySalon">Salón N/A</span>
+                <input type="text" class="form-control" id="inputSalon" placeholder="Número de salón">
+              </td>
+              <td class="editable-field">
+                Código: <span id="displayCodigoLab">N/A</span>
+                <input type="text" class="form-control" id="inputCodigoLab" placeholder="Código laboratorio">
+              </td>
+            </tr>
+            <tr class="table-light">
+              <td class="font-weight-bold">Coordinador:</td>
+              <td colspan="3" class="editable-field">
+                <span id="displayCoordinador">No disponible</span>
+                <input type="text" class="form-control" id="inputCoordinador">
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <div id="infromeRevicion" class="content-section collapse">
+    <!-- Información del Equipo -->
+    <div class="card mb-4 border-success">
+      <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">INFORMACIÓN DEL EQUIPO</h5>
+        <button id="btnEditarEquipo" class="btn btn-sm btn-light">
+          <i class="bi bi-pencil"></i> Editar
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-bordered mb-0">
+          <tbody>
+            <tr class="table-light">
+              <td class="w-25 font-weight-bold">Equipo:</td>
+              <td class="w-25 editable-field">
+                <span id="displayEquipo">mecanicos</span>
+                <input type="text" class="form-control" id="inputEquipo" value="mecanicos">
+              </td>
+              <td class="w-25 font-weight-bold">Placa UNAL:</td>
+              <td class="w-25 editable-field">
+                <span id="displayPlaca">3123424</span>
+                <input type="text" class="form-control" id="inputPlaca" value="3123424">
+              </td>
+            </tr>
+            <tr>
+              <td rowspan="3" class="font-weight-bold align-middle">Especificaciones:</td>
+              <td class="font-weight-bold">Marca:</td>
+              <td class="editable-field">
+                <span id="displayMarca">No disponible</span>
+                <input type="text" class="form-control" id="inputMarca">
+              </td>
+              <td rowspan="3" class="text-center align-middle">
+                <div class="text-muted small">Código QR</div>
+                <div class="display-4">📷</div>
+              </td>
+            </tr>
+            <tr class="table-light">
+              <td class="font-weight-bold">Modelo:</td>
+              <td class="editable-field">
+                <span id="displayModelo">No disponible</span>
+                <input type="text" class="form-control" id="inputModelo">
+              </td>
+            </tr>
+            <tr>
+              <td class="font-weight-bold">N° Serie:</td>
+              <td class="editable-field">
+                <span id="displaySerie">No disponible</span>
+                <input type="text" class="form-control" id="inputSerie">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Información del Diagnóstico -->
+    <div class="card mb-4 border-info">
+      <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">INFORMACIÓN DEL DIAGNÓSTICO</h5>
+        <button id="btnEditarDiagnostico" class="btn btn-sm btn-light">
+          <i class="bi bi-pencil"></i> Editar
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-bordered mb-0">
+          <tbody>
+            <tr class="table-light">
+              <td class="w-25 font-weight-bold">Responsable:</td>
+              <td class="w-25 editable-field">
+                <span id="displayResponsable">No disponible</span>
+                <input type="text" class="form-control" id="inputResponsable">
+              </td>
+              <td class="w-25 font-weight-bold">Fecha:</td>
+              <td class="w-25 editable-field">
+                <span id="displayFechaDiag">No disponible</span>
+                <input type="date" class="form-control" id="inputFechaDiag">
+              </td>
+            </tr>
+            <tr>
+              <td class="font-weight-bold">Persona que atendió:</td>
+              <td class="editable-field">
+                <span id="displayPersonaAtendio">No disponible</span>
+                <input type="text" class="form-control" id="inputPersonaAtendio">
+              </td>
+              <td class="font-weight-bold">Cargo/Rol:</td>
+              <td class="editable-field">
+                <span id="displayCargoRol">No disponible</span>
+                <input type="text" class="form-control" id="inputCargoRol">
+              </td>
+            </tr>
+            <tr class="table-light">
+              <td class="font-weight-bold">Contacto:</td>
+              <td colspan="3" class="editable-field">
+                <span id="displayContactoAtendio">No disponible</span>
+                <input type="text" class="form-control" id="inputContactoAtendio">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+      <!-- Diagnósticos Realizados -->
+      <div class="card mb-4 border-info">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">DIAGNÓSTICOS REALIZADOS</h5>
+        </div>
+        <div class="card-body" id="diagnosticoContainer">
+          <!-- Se llena dinámicamente desde JS -->
+        </div>
+      </div>
+
+      <!-- Mantenimientos Realizados -->
+      <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-white">
+          <h5 class="mb-0">MANTENIMIENTOS REALIZADOS</h5>
+        </div>
+        <div class="card-body" id="mantenimientoContainer">
+          <!-- Se llena dinámicamente desde JS -->
+        </div>
+      </div>
+
+      <!-- Campos para datos faltantes -->
+      <div class="card border-danger mb-4" id="datosFaltantesContainer" style="display: none;">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">COMPLETAR DATOS FALTANTES</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Diagnóstico Técnico *</label>
+            <textarea class="form-control" id="inputDiagnostico" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Actividades de Mantenimiento *</label>
+            <textarea class="form-control" id="inputActividades" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Partes Reemplazadas (opcional)</label>
+            <textarea class="form-control" id="inputPartes" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between mt-4">
+          <button class="btn btn-outline-secondary" id="btnVolverMantenimiento">
+            <i class="bi bi-arrow-left"></i> Volver
+          </button>
+          <button class="btn btn-primary" id="btnGuardarInforme">
+            <i class="bi bi-save"></i> Guardar Informe
+          </button>
+          <button class="btn btn-success" id="btnInformeRevision">
+            Continuar a Revisión <i class="bi bi-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+      
+    <div id="informeRevision" class="content-section collapse">
       <h4>Revisión y Comentarios del Informe</h4>
       <div id="mostrarInformeFinal">
         <!-- llenado con JS -->
@@ -263,8 +501,8 @@
         <button class="btn btn-success" id="btnFinalizarProceso">Finalizar Proceso</button>
       </div>
     </div>
-
   </div>
+ 
   
   <script src="contadores.js" defer></script>
   <script src="detalle_solicitud_forms.js" defer></script>

@@ -173,7 +173,7 @@ function guardarSolicitud() {
   const numEquipo = document.getElementById('numEquipo').value;
   const placaEquipo = document.getElementById('placaEquipo').value;
   const contacto = document.getElementById('numeroContacto').value;
-  const numeroSalon = document.getElementById('numeroSalon') ? document.getElementById('numeroSalon').value : ''; // Agregar verificación
+  const numeroSalon = document.getElementById('numeroSalon') ? document.getElementById('numeroSalon').value : ''; 
 
   const solicitud = {
     numeroSolicitud: document.getElementById('numeroSolicitud').value,
@@ -182,7 +182,7 @@ function guardarSolicitud() {
     nombreLaboratorio: document.getElementById('nombreLaboratorio').value,
     bloque: document.getElementById('NumBloque').value,
     facultad: document.getElementById('facultad').value,
-    salon: numeroSalon, // Usar la variable que contiene el valor del campo
+    salon: numeroSalon, 
     correoElectronico: document.getElementById('correoElectronico').value,
     numeroContacto: document.getElementById('numeroContacto').value,
     numEquipo: document.getElementById('numEquipo').value,

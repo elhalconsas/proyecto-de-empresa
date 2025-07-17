@@ -122,6 +122,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (ocultar) ocultar.classList.add('collapse');
         const mostrar = document.getElementById(cfg.mostrar);
         if (mostrar) mostrar.classList.remove('collapse');
+        // Siempre mostrar las entradas actualizadas
+        mostrarDiagnosticos();
+        mostrarMantenimientos();
       });
     }
   });
@@ -148,6 +151,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (diagSection) diagSection.classList.remove('collapse');
       // Actualiza estado
       actualizarEtapa('En diagnostico');
+      mostrarDiagnosticos();
+      mostrarMantenimientos();
     });
   }
 
@@ -176,6 +181,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (mantSection) mantSection.classList.remove('collapse');
       // Actualiza estado
       actualizarEtapa('En mantenimiento');
+      mostrarDiagnosticos();
+      mostrarMantenimientos();
     });
   }
   // Botón para pasar de mantenimiento a informe
@@ -190,21 +197,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (informeSection) informeSection.classList.remove('collapse');
       // Actualiza estado
       actualizarEtapa('En informe');
-    });
-  }
-
-  // Botón para pasar de informe a revisión
-  const btnInformeRevision = document.getElementById('btnInformeRevision');
-  if (btnInformeRevision) {
-    btnInformeRevision.addEventListener('click', function() {
-      // Oculta la sección de informe
-      const informeSection = document.getElementById('informeSection');
-      if (informeSection) informeSection.classList.add('collapse');
-      // Muestra la sección de revisión
-      const revSection = document.getElementById('infromeRevicion');
-      if (revSection) revSection.classList.remove('collapse');
-      // Actualiza estado
-      actualizarEtapa('En aprobacion');
+      mostrarDiagnosticos();
+      mostrarMantenimientos();
     });
   }
 
@@ -233,6 +227,41 @@ document.addEventListener('DOMContentLoaded', function() {
 let solicitudActual = null;
 let modoEdicion = false;
 let etapaActual = 'informacion';
+
+function guardarEdicion() {
+  solicitudActual.nombreLaboratorio = document.getElementById('editLaboratorio').value;
+  solicitudActual.bloque = document.getElementById('editBloque').value;
+  solicitudActual.facultad = document.getElementById('editFacultad').value;
+  solicitudActual.salon = document.getElementById('editSalon').value;
+  solicitudActual.correoElectronico = document.getElementById('editCorreo').value;
+  solicitudActual.numeroContacto = document.getElementById('editContacto').value;
+  solicitudActual.numEquipo = document.getElementById('editNumEquipo').value;
+  solicitudActual.placaEquipo = document.getElementById('editPlaca').value;
+  solicitudActual.ordenTrabajo = document.getElementById('editOrden').value;
+  solicitudActual.tipoEquipo = document.getElementById('editTipoEquipo').value;
+  solicitudActual.descripcionProblema = document.getElementById('editDescripcion').value;
+
+  // Actualizar en localStorage
+  let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
+  const index = enProceso.findIndex(s => s.numeroCaso === solicitudActual.numeroCaso);
+  if (index !== -1) {
+    enProceso[index] = solicitudActual;
+    localStorage.setItem('enProceso', JSON.stringify(enProceso));
+  }
+
+  // Volver a la vista de solo lectura
+  modoEdicion = false;
+  mostrarInfoSolicitud(solicitudActual);
+}
+
+function configurarEventos() {
+  document.getElementById('btnContinuarDiagnostico').addEventListener('click', () => actualizarEtapa('diagnostico'));
+  document.getElementById('btnEditar').addEventListener('click', habilitarEdicion);
+  // document.getElementById('btnVolverInformacion').addEventListener('click', volverAInformacion);
+  document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicion);
+
+
+}
 
 document.addEventListener('DOMContentLoaded', function () {
   const numeroCaso = localStorage.getItem('detalleActual');
@@ -265,13 +294,6 @@ function actualizarEtapa(etapa) {
   mostrarInfoSolicitud(solicitudActual);
 }
 
-function configurarEventos() {
-  document.getElementById('btnContinuarDiagnostico').addEventListener('click', () => actualizarEtapa('diagnostico'));
-  document.getElementById('btnEditar').addEventListener('click', habilitarEdicion);
-  document.getElementById('btnVolverInformacion').addEventListener('click', volverAInformacion);
-  document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicion);
-
-}
 
 function mostrarResumen(solicitud) {
   const resumen = document.getElementById('tablaDetalleResumen');
@@ -449,42 +471,189 @@ function habilitarEdicion() {
     </form>
   `;
   
-  document.getElementById('btnCancelarEdicion').addEventListener('click', volverAInformacion);
+  // document.getElementById('btnCancelarEdicion').addEventListener('click', volverAInformacion);
   document.getElementById('btnGuardarEdicion').addEventListener('click', guardarEdicion);
 }
+function mostrarInformeCompleto() {
+  console.log('Diagnósticos:', solicitudActual.diagnosticos);
+  console.log('Mantenimientos:', solicitudActual.mantenimientos);
+  if (!solicitudActual) return;
 
-function volverAInformacion() {
-  modoEdicion = false;
-  mostrarInfoSolicitud(solicitudActual);
+  // Información de la solicitud
+  document.getElementById('infoNumeroSolicitud').textContent = solicitudActual.numeroSolicitud || 'No disponible';
+  document.getElementById('infoFechaSolicitud').textContent = solicitudActual.fechaSolicitud || 'No disponible';
+  document.getElementById('infoSolicitante').textContent = solicitudActual.solicitante || 'No disponible';
+  document.getElementById('infoCargoSolicitante').textContent = solicitudActual.cargo || 'No disponible';
+  document.getElementById('infoLaboratorio').textContent = solicitudActual.nombreLaboratorio || 'No disponible';
+  document.getElementById('infoFacultad').textContent = solicitudActual.facultad || 'No disponible';
+  document.getElementById('infoBloque').textContent = `Bloque ${solicitudActual.bloque || 'N/A'}`;
+  document.getElementById('infoSalon').textContent = `Salón ${solicitudActual.salon || 'N/A'}`;
+  document.getElementById('infoCodigoLab').textContent = solicitudActual.codigoLaboratorio || 'N/A';
+  document.getElementById('infoCoordinador').textContent = solicitudActual.coordinador || 'No disponible';
+
+  // Información del equipo
+  document.getElementById('infoNombreEquipo').textContent = solicitudActual.tipoEquipo || 'No disponible';
+  document.getElementById('infoPlacaEquipo').textContent = solicitudActual.placaEquipo || 'No disponible';
+  document.getElementById('infoMarcaEquipo').textContent = solicitudActual.marca || 'No disponible';
+  document.getElementById('infoModeloEquipo').textContent = solicitudActual.modelo || 'No disponible';
+  document.getElementById('infoSerieEquipo').textContent = solicitudActual.numeroSerie || 'No disponible';
+
+  // Información del diagnóstico
+  document.getElementById('infoFechaDiagnostico').textContent = solicitudActual.fechaDiagnostico || 'No disponible';
+  document.getElementById('infoResponsableDiagnostico').textContent = solicitudActual.responsableDiagnostico || 'No disponible';
+  document.getElementById('infoPersonaAtendio').textContent = solicitudActual.personaAtendio || 'No disponible';
+  document.getElementById('infoCargoRol').textContent = solicitudActual.cargoRol || 'No disponible';
+  document.getElementById('infoContactoAtendio').textContent = solicitudActual.contacto || 'No disponible';
+
+  // Mostrar diagnósticos
+  const diagnosticoContainer = document.getElementById('diagnosticoContainer');
+  diagnosticoContainer.innerHTML = '';
+  
+  if (solicitudActual.diagnosticos && solicitudActual.diagnosticos.length > 0) {
+    solicitudActual.diagnosticos.forEach(d => {
+      diagnosticoContainer.innerHTML += `
+        <div class="entry-item mb-3">
+          <h6>${d.titulo || 'Diagnóstico'}</h6>
+          <p>${d.comentario || 'Sin comentarios'}</p>
+          ${d.imagenes && d.imagenes.length > 0 ? 
+            `<div class="mt-2">Imágenes: ${d.imagenes.map(img => 
+              `<span class="badge bg-info text-dark me-1">${img}</span>`
+            ).join('')}</div>` : ''}
+          <small class="text-muted">${new Date(d.fecha).toLocaleString()}</small>
+        </div>
+      `;
+    });
+  } else {
+    document.getElementById('datosFaltantesContainer').style.display = 'block';
+  }
+
+  // Mostrar mantenimientos
+   const mantenimientoContainer = document.getElementById('mantenimientoContainer');
+  mantenimientoContainer.innerHTML = '';
+  
+  if (solicitudActual.mantenimientos && solicitudActual.mantenimientos.length > 0) {
+    solicitudActual.mantenimientos.forEach(m => {
+      mantenimientoContainer.innerHTML += `
+        <div class="entry-item mb-3">
+          <h6>${m.titulo || 'Mantenimiento'}</h6>
+          <p><strong>Actividades:</strong> ${m.actividades || 'No especificado'}</p>
+          ${m.partes ? `<p><strong>Partes:</strong> ${m.partes}</p>` : ''}
+          ${m.imagenes && m.imagenes.length > 0 ? 
+            `<div class="mt-2">Imágenes: ${m.imagenes.map(img => 
+              `<span class="badge bg-info text-dark me-1">${img}</span>`
+            ).join('')}</div>` : ''}
+          <small class="text-muted">${new Date(m.fecha).toLocaleString()}</small>
+        </div>
+      `;
+    });
+    document.getElementById('datosFaltantesContainer').style.display = 'none';
+  } else {
+    document.getElementById('datosFaltantesContainer').style.display = 'block';
+  }
 }
 
-function guardarEdicion() {
-  solicitudActual.nombreLaboratorio = document.getElementById('editLaboratorio').value;
-  solicitudActual.bloque = document.getElementById('editBloque').value;
-  solicitudActual.facultad = document.getElementById('editFacultad').value;
-  solicitudActual.salon = document.getElementById('editSalon').value;
-  solicitudActual.correoElectronico = document.getElementById('editCorreo').value;
-  solicitudActual.numeroContacto = document.getElementById('editContacto').value;
-  solicitudActual.numEquipo = document.getElementById('editNumEquipo').value;
-  solicitudActual.placaEquipo = document.getElementById('editPlaca').value;
-  solicitudActual.ordenTrabajo = document.getElementById('editOrden').value;
-  solicitudActual.tipoEquipo = document.getElementById('editTipoEquipo').value;
-  solicitudActual.descripcionProblema = document.getElementById('editDescripcion').value;
+// Modificar la función guardarInforme para actualizar correctamente los datos
+document.getElementById('btnGuardarInforme').addEventListener('click', function() {
+  const diagnostico = document.getElementById('inputDiagnostico').value;
+  const actividades = document.getElementById('inputActividades').value;
+  const partes = document.getElementById('inputPartes').value;
 
-  // Actualizar en localStorage
+  if (!diagnostico || !actividades) {
+    alert('Por favor complete al menos el diagnóstico y las actividades realizadas');
+    return;
+  }
+
+  // Guardar diagnóstico si no existe
+  if (!solicitudActual.diagnosticos || solicitudActual.diagnosticos.length === 0) {
+    if (!solicitudActual.diagnosticos) solicitudActual.diagnosticos = [];
+    solicitudActual.diagnosticos.push({
+      titulo: 'Diagnóstico técnico',
+      comentario: diagnostico,
+      fecha: new Date().toISOString()
+    });
+  }
+
+  // Guardar mantenimiento si no existe
+  if (!solicitudActual.mantenimientos || solicitudActual.mantenimientos.length === 0) {
+    if (!solicitudActual.mantenimientos) solicitudActual.mantenimientos = [];
+    solicitudActual.mantenimientos.push({
+      titulo: 'Mantenimiento correctivo',
+      actividades: actividades,
+      partes: partes,
+      fecha: new Date().toISOString()
+    });
+  }
+
   let enProceso = JSON.parse(localStorage.getItem('enProceso')) || [];
-  const index = enProceso.findIndex(s => s.numeroCaso === solicitudActual.numeroCaso);
+  const index = enProceso.findIndex(s => s.numeroSolicitud === solicitudActual.numeroSolicitud);
   if (index !== -1) {
     enProceso[index] = solicitudActual;
     localStorage.setItem('enProceso', JSON.stringify(enProceso));
   }
 
-  // Volver a la vista de solo lectura
-  modoEdicion = false;
-  mostrarInfoSolicitud(solicitudActual);
+  mostrarInformeCompleto();
+  alert('Datos guardados correctamente');
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const informeSection = document.getElementById('informeSection');
+  if (informeSection) {
+    new MutationObserver(function() {
+      if (!informeSection.classList.contains('collapse')) {
+        mostrarInformeCompleto();
+      }
+    }).observe(informeSection, { attributes: true });
+  }
+});
+function setupEditableFields(btnId, containerClass) {
+  const editBtn = document.getElementById(btnId);
+  if (!editBtn) return;
+
+  editBtn.addEventListener('click', function() {
+    const container = this.closest('.card');
+    const fields = container.querySelectorAll('.editable-field');
+    
+    fields.forEach(field => {
+      field.classList.toggle('editing');
+      
+      // Si estamos saliendo del modo edición, actualizar el span con el valor del input
+      if (!field.classList.contains('editing')) {
+        const input = field.querySelector('input');
+        const span = field.querySelector('span');
+        if (input && span) {
+          span.textContent = input.value || 'No disponible';
+        }
+      }
+    });
+
+    // Cambiar el texto del botón
+    if (this.innerHTML.includes('Guardar')) {
+      this.innerHTML = '<i class="bi bi-pencil"></i> Editar';
+      this.classList.remove('btn-success');
+      this.classList.add('btn-light');
+    } else {
+      this.innerHTML = '<i class="bi bi-check"></i> Guardar';
+      this.classList.remove('btn-light');
+      this.classList.add('btn-success');
+    }
+  });
 }
 
-function cambiodePunto(){
+document.addEventListener('DOMContentLoaded', function() {
+  setupEditableFields('btnEditarSolicitud', '.card-body');
+  setupEditableFields('btnEditarEquipo', '.card-body');
+  setupEditableFields('btnEditarDiagnostico', '.card-body');
 
+  // Guardar todo el informe
+  document.getElementById('btnGuardarInforme').addEventListener('click', function() {
+    // Validar campos obligatorios
+    if (!document.getElementById('inputDiagnostico').value || 
+        !document.getElementById('inputActividades').value) {
+      alert('Por favor complete el diagnóstico técnico y las actividades realizadas');
+      return;
+    }
 
-}
+    
+    alert('Informe guardado correctamente');
+  });
+});
